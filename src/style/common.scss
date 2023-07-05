@@ -1,0 +1,431 @@
+@import './mixins.scss';
+
+// 아이콘
+// 다운로드 버튼 icon
+.download-icon {
+  display: inline-block;
+  margin-left: 5px;
+  margin-top: -2px;
+  width: 16px;
+  height: 15px;
+  background: url('../assets/images/icon-download@3x.png') no-repeat;
+  background-position: 0 1px;
+  background-size: contain;
+}
+//  업로드 버튼 아이콘
+.upload-icon {
+  background: url('../assets/images/icon-upload.svg')
+  no-repeat;
+  padding-right: 20px;
+  position: relative;
+  left: 5px;
+  bottom: 1px;
+}
+
+// 캘린더 아이콘
+.calendar-icon {
+  display: inline-block;
+  margin-left: $gap-s;
+  margin-top: -2px;
+  width: 19px;
+  height: 20px;
+  background: url('../assets/images/calendar_ico@3x.png') no-repeat;
+  background-position: 0 1px;
+  background-size: contain;
+}
+
+// 플러스 버튼 icon
+.add-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url('../assets/images/icon-add-circle.svg');
+}
+
+// 쓰레기통 버튼 icon
+.button {
+  .delete-icon {
+    display: inline-block;
+    width: 12px;
+    height: 32px;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-image: url('../assets/images/icon-trashcan@3x.png');
+  }
+  &:not([disabled=disabled]) .delete-icon:not(.-not-hoverable):hover {
+    background-image: url('../assets/images/icon-red-trashcan@3x.png');
+  }
+}
+
+.-draggable-icon {
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  &:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
+}
+
+// 총 - 개 css
+.total-count-wrap {
+  // margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  &.-with-filter {
+    margin-bottom: 50px;
+  }
+}
+
+.-inner { // 바디의 전반적인 inner 
+  // padding: 0 $gap;
+  max-width: 1600px;
+  margin: auto;
+}
+
+// 테이블 영역
+.table-area { margin-top: $gap; }
+
+
+// 사이드 트리 (g-tree) 영역
+.side-tree-area {
+  overflow-y: auto;
+  padding: $gap-s $gap;
+  max-height: 80vh;
+  min-height: 80vh;
+  min-width: 230px;
+  background: $dark-navy;
+  border-radius: $radius-m;
+  .tree-wrapper {
+    > .tree-node.first-dpt {
+      margin-top: $gap;
+    }
+    .node-item-child {
+      color: $color-lightgrey;
+    }
+  }
+}
+
+
+// 데이터가 없는 영역 (사각박스 있음)
+.empty-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $gap-s;
+  padding: $gap;
+  color: $disable;
+  border: 1px dotted $disable;
+}
+// 데이터가 없는 영역 (사각박스 없음)
+.empty-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $gap-s;
+  padding: $gap;
+  color: $disable;
+  &-link { 
+    text-decoration: none;
+    color: $primary;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+
+// 테이블 상단 (테이블 갯수 + 상단 버튼)
+.table-top-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-height: 32px;
+  > .total-count {
+    padding: 0;
+  }
+}
+
+
+// 버튼 영역
+.button-area {
+  display: flex;
+  .button + .button{
+    margin-left: $gap-s;
+  }
+  > .divider {
+    display: inline-block;
+    margin: 0 $gap-s;
+    margin-top: 5px;
+    width: 1px;
+    height: 24px;
+    background-color: $main-gray;
+  }
+  &.-left {
+    justify-content: flex-start;
+  }
+  &.-right {
+    justify-content: flex-end;
+  }
+  &.-center {
+    justify-content: center;
+  }
+  &.-vertical {
+    flex-direction: column;
+    .button + .button{
+      margin: 0;
+      margin-top: $gap-s;
+    }
+  }
+
+  &.page-bottom { // border-top이 있는 버튼 영역
+    margin-top: 30px;
+    padding-top: $gap;
+    border-top: 1px solid $border-color;
+  }
+
+  &.-form-bottom { // 입력 페이지 하단에 있는 버튼 영역
+    margin-top: $gap;
+  }
+}
+
+
+// 타이틀 
+.product-title {
+  display: block;
+  margin-bottom: $gap-s;
+  color: $white;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.sub-title {
+  position: relative;
+  display: block;
+  padding-left: $gap-s;
+  margin-right: 15px;
+  margin-bottom: $gap-s;
+  font-size: 18px;
+  font-weight: 400;
+  word-break: keep-all;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 0;
+    width: 2px;
+    height: 16px;
+    background-color: $primary;
+  }
+}
+
+.mid-title {
+  font-size: 18px;
+  margin-bottom: $gap-s;
+}
+
+.small-title {
+  display: block;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+// display: flex 를 감싸는 태그
+.flex-wrap {
+  display: flex;
+  align-items: center;
+  &.-space-between {
+    justify-content: space-between;
+  }
+  &.center {
+    justify-content: center;
+  }
+  &.-flex-start {
+    justify-content: flex-start;
+  }
+  &.-flex-end {
+    justify-content: flex-end;
+  }
+}
+
+// 링크 걸린 태그 (<a></a>) 스타일
+.-link {
+  color: $sea-blue !important;
+  white-space: wrap;
+  &:hover { text-decoration: underline; }
+}
+
+// 업무 (사전협의, 할 일, 한 일) 자원 테이블 공통
+.task-resource-grid {
+  .title-area {
+    margin-bottom: $gap-s;
+    align-items: flex-end;
+    .process-top-area {
+      display: flex;
+      align-items: center;
+      > .sub-title {
+        margin-bottom: 0;
+      }
+      > small {
+        margin-left: 15px;
+        font-size: 14px;
+        color: #b4b4b4;
+      }
+    }
+  }
+}
+
+
+// ExternalDisk 슬라이더 popper 
+.slider-tooltip.el-tooltip__popper {
+  width: 60px;
+  line-height: 12px;
+  // height: 32px;
+  box-sizing: border-box;
+  background-color: $main-red;
+  text-align: center;
+  color: $white;
+  border-radius: 20px;
+  .popper__arrow {
+    border-top-color: transparent;
+    &:after {
+      border-top-color: $main-red;
+    }
+  }
+}
+
+.el-tooltip__popper {
+  .limit-width-tooltip {
+    display: block;
+    width: 250px;
+    word-break: keep-all;
+  }
+}
+
+// 작은 설명 글씨.. ex) 이미지-파일 크기
+.mini-desc {
+  color: $color-grey;
+  font-size: 12px;
+}
+
+// sub tab? 스위치 모양의 라디오... 대시보드 영역 말고는 내부 탭 임시 적용
+.radio-switch-group {
+  display: inline-block;
+  border-radius: 25px;
+  background-color: $dark-navy;
+  margin-right: $gap;
+  .el-radio-button {
+    // min-width: 70px;
+    height: 30px;
+    border: none;
+    &:first-child {
+      .el-radio-button__inner { border: none; }
+    }
+    .el-radio-button__inner {
+      background-color: transparent;
+      transition: .5s ease;
+      padding: 0;
+      padding: 0 $gap;
+      height: 30px;
+      line-height: 32px;
+      width: 100%;
+      border: none;
+      font-size: 13px;
+      line-height: 30px;
+      &:hover { color: $white; }
+      &:focus { outline: none; }
+    }
+
+    &.is-active {
+      border-radius: 15px;
+      color: $text-black;
+      background-color: $white;
+      .el-radio-button__inner {
+        border: none;
+        background-color: $white;
+        border-radius: 25px;
+        color: #333;
+        box-shadow: none;
+        position: relative;
+        &::before {
+          position: absolute;
+          width: 100%; height: 100%;
+          // box-shadow: 2.5px 4.3px 5px 0 rgba(102, 102, 102, 0.2);
+          border-radius: 25px;
+          top:0; left: 0;
+          content: ''
+        }
+        &:hover { color: $text-black; }
+      }
+    }
+  }
+}
+
+
+// state-icon  상태를 나타내는 동그라미 아이콘
+.state-icon { // 일반 (운영안함)
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: $disable;
+  &.success { // 정상 (운영중)
+    background-color: $success;
+  }
+  &.error { // 실패 (운영에러)
+    background-color: $danger;
+  }
+}
+
+
+// 폼에 사용되는 el-input-number
+.form-input-number { width: 120px; }
+.form-input {width: 200px !important;}
+
+// 프로그레스 바 영역
+.progressbar-wrap {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  // flex-wrap: wrap;
+  padding: 6px 10px;
+  width: auto;
+  border-radius: 6px;
+  background-color: $ticket-back-color;
+  .progress-bar {
+    min-width: 120px;
+    max-width: 120px;
+  }
+  .progress-desc {
+    display: inline-block;
+    margin-left: $gap-s;
+    // max-width: 105px;
+    color: $color-lightgrey;
+    letter-spacing: -0.65px;
+    &.ellipsis-wrap {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// APP 업무 담당자, APP 운영팀, 서버 담당자 등 custom popup 스타일
+.custom-popup {
+  &.-app-team { @include customPopup() }
+  &.-app-manager { @include customPopup(700px, 640px) }
+  &.-server-manager { @include customPopup(700px, 500px)  }
+ 
+}
+
+.v-modal {
+  z-index: 2000 !important;
+}

@@ -1,0 +1,399 @@
+<!--
+  * 파일명 : SetBillingModelModal.vue
+  * 파일 기능 : [빌링 > 모델 > 과금모델 > 과금모델 관리/서버별 보정 모델/관계사별 보정 모델] 클릭시 보이는 모달입니다. 과금모델을 생성/변경/삭제할 수 있습니다.
+  * 작성자 : 김예담 외 2명
+  * 최종 작성일 : 2021-01-29
+  * License By Shinsegae I&C
+  * 2021-01-29 fix: 모달 오픈시, body 스크롤 제거 ... 공통 적용, 이에 따른 불필요 코드 제거
+ -->
+
+<template>
+  <el-dialog
+    :title="$t('common.BTN.BILL.manageBillModel')"
+    :visible.sync="isActive"
+    :before-close="done => {
+      close()
+      done()
+    }"
+    width="50%"
+    top="5%"
+    class="set-billing-model-modal"
+  >
+    <section class="modal-body">
+      <div class="button-area -right">
+        <button
+          class="button"
+          @click="activeNewBilling"
+          type="is-primary"
+          v-if="!newBillingForm"
+        >
+          {{ $t('common.BTN.BILL.newModelCreate') }}
+        </button>
+        <template v-else>
+          <button
+            class="button"
+            type="is-anti"
+            @click="newBillingForm = false"
+          >
+            {{ $t('common.BTN.cancel') }}
+          </button>
+          <button
+            class="button"
+            type="is-primary"
+            @click="confirm"
+          >
+            {{ $t('common.BTN.create') }}
+          </button>
+        </template>
+      </div>
+
+      <ul
+        class="form-area"
+        v-show="newBillingForm"
+      >
+        <li class="form-item">
+          <span class="form-title">{{ $t('bill.modelName') }} : </span>
+          <el-input
+            v-model="newBilling.name"
+            style="width: 250px;"
+            ref="billingModelInput"
+          />
+        </li>
+      </ul>
+
+      <cmp-tree
+        :item-source="copiedData"
+        :columns="columns"
+        ref="tree"
+        :init-custom-action="customInit"
+        class="tree-area"
+        :all-row-selectable="true"
+        height="65vh"
+      >
+        <template #title="props">
+          <section class="cell-contents">
+            <el-input
+              v-if="props.row.edit"
+              v-model="props.row.title"
+              class="form-input"
+              clearable
+              @keypress.enter.native="updateModelName(props.row)"
+            />
+            <span v-else>
+              {{ props.row.title }}
+            </span>
+          </section>
+          <div
+            class="button-area"
+            style="margin-left: 20px;"
+          >
+            <button
+              class="button"
+              v-if="!props.row.edit && props.row.deleteAble"
+              type="is-anti"
+              @click.stop="e => {
+                props.row.beforeEditData = props.row.title
+                props.row.edit = true
+              }"
+              :disabled="props.row._default"
+            >
+              {{ $t('common.BTN.BILL.modModelName') }}
+            </button>
+            <button
+              class="button"
+              v-if="props.row.edit && !props.row._default"
+              @click.stop="e => {
+                props.row.title = props.row.beforeEditData
+                props.row.edit = false
+              }"
+              type="is-anti"
+            >
+              {{ $t('common.BTN.cancel') }}
+            </button>
+            <button
+              class="button"
+              type="is-primary"
+              v-if="props.row.edit && !props.row._default"
+              @click.stop="updateModelName(props.row)"
+            >
+              {{ $t('common.BTN.change') }}
+            </button>
+
+            <button
+              class="button"
+              v-if="props.row.deleteAble && !props.row.isActive && copiedData.length > 1"
+              @click="deleteModel(props.row)"
+              type="is-icon"
+            >
+              <i class="icon-button delete-icon" />
+            </button>
+          </div>
+        </template>
+      </cmp-tree>
+    </section>
+    <div class="big-button-area">
+      <button
+        class="button -modal-button"
+        type="is-anti"
+        @click="cancel(true)"
+      >
+        {{ $t('common.BTN.cancel') }}
+      </button>
+    </div>
+  </el-dialog>
+</template>
+<script>
+import { mapValues, cloneDeep } from 'lodash'
+import * as wjGrid from '@grapecity/wijmo.grid'
+import ManageModelMixins from './ManageModelMixins'
+
+export default {
+  name: 'SetBillingModelModal',
+  mixins: [ManageModelMixins],
+  components: {},
+  props: {
+    active: {
+      type: Boolean,
+      default: false
+    },
+    data: {
+      type: Array,
+      default: () => []
+    },
+    send: {
+      type: String,
+      required: true
+    }
+  },
+  created () {
+    this.cloneTreeData(this.data)
+  },
+  watch: {
+    active (newVal) {
+      this.isActive = newVal
+    },
+    isActive (newVal) {
+      this.active = newVal
+
+      if (!newVal) this.newBillingForm = false
+    },
+    data (newVal) {
+      this.cloneTreeData(newVal)
+    },
+    newBillingForm (newVal) {
+      if (!newVal) {
+        this.newBilling = mapValues(this.newBilling, () => '')
+      }
+    }
+  },
+  methods: {
+    emptyDataAlert () {
+      this.$alert(this.$t('common.ALERT.BASE.012'), '알림', {
+        confirmButtonText: this.$t('common.BTN.confirm'),
+        type: 'error'
+      })
+      return false
+    },
+    customInit (grid) {
+      this.grid = grid
+    },
+    /**
+     * [신규 과금 등록] 버튼 클릭 시, 새로운 과금 모델을 추가합니다.
+     */
+    activeNewBilling () {
+      this.newBillingForm = true
+
+      this.$nextTick(() => {
+        this.$refs.billingModelInput.focus()
+      })
+    },
+    /**
+     * 새 모델 생성 시, 기본 오브젝트 세팅
+     */
+    setNewBillingModel (item) {
+      const obj = Object.assign(item, {
+        name: item.name,
+        edit: false
+      })
+      return obj
+    },
+    /**
+     * 과금 모델 추가/수정 후 [확인] 버튼 클릭 시
+     */
+    saveBillingGroup () {
+      console.log('saveBillingGroup')
+      if (!this.newBilling.name) this.emptyDataAlert()
+
+      if (this.newBilling.crud === 'create') { // 과금 모델 생성일 때
+        const newOrgObj = this.setNewBillingModel(this.newBilling)
+        const newRow = new wjGrid.Row()
+        newRow.dataItem = newOrgObj
+        newRow.level = 0
+
+        this.grid.rows.insert(0, newRow)
+        if (this.copiedData?.length) this.copiedData.unshift(newOrgObj)
+        else this.copiedData.push(newOrgObj)
+        this.gridRefresh()
+      } else { // 과금 모델 수정일 때
+        this.editingBillingModel = cloneDeep(this.newBilling)
+      }
+      this.newBillingForm = false
+    },
+
+    /**
+     * [신규 과금 등록] > [변경] 일 때
+     * @param {Obect} item 변경 할 아이템
+     */
+    applyUpdateBillingModel (row) {
+      this.editingBillingModel = row
+
+      row.crud = 'update'
+      this.newBilling = this.objectMap(row, value => value)
+
+      this.newBillingForm = true
+    },
+    /**
+     * [서비스 수정] 버튼 클릭 시
+     */
+    applyUpdateService (rowItem) {
+      rowItem.beforeEditItem = cloneDeep(rowItem)
+      console.log('[수정] 클릭시, row: ', rowItem)
+      rowItem.crud = 'update'
+      rowItem.edit = true
+
+      this.gridRefresh()
+    },
+    /**
+     * 전체 데이터에서 item을 삭제합니다.
+     * @param {Array} all 전체 데이터
+     * @param {Object} itm 삭제 할 객체
+     * @param {String} key 삭제 할 객체의 고유 key값..
+     */
+    // removeItems (all, itm, key) {
+    //   all.find((item, index) => {
+    //     if (item[key] === itm[key]) {
+    //       all.splice(index, 1)
+    //     } else if (item.children?.length > 0) {
+    //       item.children = this.removeItems(item.children, itm, key)
+    //     }
+    //   })
+    //   this.gridRefresh()
+    //   return all
+    // },
+    /**
+     * [완료]버튼을 눌렀을 때, 수정 사항을 적용합니다.
+     */
+    finishEdit (cellItem, beforeEditItem = null) {
+      if (beforeEditItem) {
+        for (const key in cellItem) {
+          cellItem[key] = beforeEditItem[key]
+        }
+        // cellItem.title = this.beforeEditItem.title
+      } else {
+        if (!cellItem.billingUpper) { // 신규 과금일 때
+          if (!cellItem.title) {
+            this.$alert(this.$t('common.ALERT.BASE.012'), '알림', {
+              confirmButtonText: this.$t('common.BTN.confirm'),
+              type: 'error'
+            })
+            return false
+          }
+        } else {
+          // 서비스일 때
+          if (!cellItem.title) {
+            this.$alert(this.$t('common.ALERT.BILL.011'), '알림', {
+              confirmButtonText: this.$t('common.BTN.confirm'),
+              type: 'error'
+            })
+            return false
+          }
+        }
+      }
+      cellItem.edit = false
+      this.gridRefresh()
+    },
+    /**
+     * [항목 추가]버튼을 눌렀을 때, 해당 항목에 자식 요소를 추가합니다.
+     */
+    addChildrenRow (rowItem) {
+      if (rowItem.children?.length) {
+        const isNewItem = rowItem.children.filter(row => row.crud === 'create' && row.edit)
+        if (isNewItem.length) return
+      }
+
+      const newRow = new wjGrid.Row()
+      const newObj = {
+        crud: 'create',
+        billingUpper: Math.random().toString(36).substr(2),
+        id: '_' + Math.random().toString(36).substr(2),
+        title: '',
+        edit: true,
+        children: []
+      }
+      newRow.dataItem = newObj
+      // if (!this.selectedRow) this.setRowToSelect(newRow)
+      newRow.level = rowItem.level + 1
+      if (rowItem.children) rowItem.children.unshift(newObj)
+      else {
+        rowItem.children = []
+        rowItem.children.push(newObj)
+      }
+      this.grid.rows.insert(rowItem._idx + 1, newRow)
+
+      this.gridRefresh()
+    },
+    objectMap (object, mapFn) {
+      return Object.keys(object).reduce(function (result, key) {
+        result[key] = mapFn(object[key])
+        return result
+      }, {})
+    }
+  },
+  data () {
+    return {
+      isActive: this.active || false,
+
+      copiedData: null,
+      newBilling: {
+        // crud: 'create',
+        // billingUpper: 0,
+        // id: '_' + Math.random().toString(36).substr(2),
+        name: ''
+        // newMethod: 'copy' // copy, new
+      },
+      newBillingForm: false,
+
+      columns: [
+        { header: '과금 모델', binding: 'title', width: '*', foldable: true, customHtml: true, keyPath: 'bill.billModel' }
+      ],
+      beforeEditItem: null, // 편집할 때, 편집 전 데이터를 기억하기 위한....
+      editingBillingModel: {} // 편집 중인 빌링 모델.
+
+    }
+  }
+}
+</script>
+<style lang="scss">
+  .set-billing-model-modal {
+    .form-area {
+      display: flex;
+      margin: $gap-s 0;
+      padding: $gap-s $gap;
+      background: $ticket-back-color;
+      border-radius: $radius-m;
+      > .form-item {
+        // flex: 1 1 70%;
+        display: flex;
+        align-items: center;
+        &:not(:first-child) {margin-left: 100px;}
+        > .form-title {min-width: 80px;}
+        > .el-input {width: 100%;}
+      }
+    }
+
+    .tree-area {
+      margin-top: $gap-s;
+    }
+
+  }
+</style>

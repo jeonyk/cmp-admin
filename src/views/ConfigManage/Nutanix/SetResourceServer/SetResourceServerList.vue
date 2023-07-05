@@ -1,0 +1,1517 @@
+<!--
+  * 파일명 : SetResourceServerList.vue
+  * 파일 기능 : 구성관리 > 자원 관리 > Compute 리스트 확인 기능, 필터링(관계사 / 조직 / 프로젝트) 기능
+  * 작성자 : 김예담 외 2명
+  * 최종 작성일 : 2021-02-25
+  * License By Shinsegae I&C
+  * 2021-02-25 계정관리 > 사용자계정/운영관리자계정 : 필터링 버그 픽스 및 UI 개선
+ -->
+
+<template>
+  <div class="set-resource-server-list">
+    <resource-filter-component
+      v-if="!isOnlyGrid"
+      cloud-type="private"
+      :table-data="filteredData"
+      @search="searchCompute"
+      @reset="() => {
+        filteredVmState = ''
+        filteredCluster = null
+        filteredNode = null
+        filteredIsUrgent = ''
+        isRefreshGrid = true
+      }"
+    >
+      <section class="filter-form">
+        <span class="filter-name">{{ $v('VM 상태') }}</span>
+        <div class="filter-options">
+          <el-select
+            v-model="filteredVmState"
+            :placeholder="$v('VM 상태')"
+            :popper-append-to-body="false"
+            @change="() => {
+              isRefreshGrid= true
+              updateMainGrid()
+            }"
+          >
+            <!-- @change="filtering()" -->
+            <el-option
+              v-for="option in vmStateOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </div>
+      </section>
+      <section class="filter-form">
+        <span class="filter-name">{{ $v('긴급 처리 여부') }}</span>
+        <el-select
+          v-model="filteredIsUrgent"
+          :placeholder="$v('분류')"
+          :popper-append-to-body="false"
+          @change="updateMainGrid()"
+        >
+          <el-option
+            v-for="option in isUrgentOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
+        </el-select>
+      </section>
+
+      <template #suffix>
+        <section class="filter-form">
+          <span class="filter-name">{{ $v('클러스터') }}</span>
+          <div class="filter-options">
+            <el-select
+              v-loading="loading.cluster"
+              v-model="filteredCluster"
+              :placeholder="$v('클러스터를 선택해주세요.')"
+              :popper-append-to-body="false"
+              @change="() => {
+                isRefreshGrid= true
+                updateMainGrid()
+              }"
+            >
+              <el-option
+                v-for="option in clusterOptions"
+                :key="option.clusterUuid"
+                :label="option.clusterName"
+                :value="option.clusterUuid"
+              />
+            </el-select>
+          </div>
+        </section>
+        <section class="filter-form">
+          <span class="filter-name">{{ $v('노드') }}</span>
+          <div class="filter-options">
+            <el-select
+              v-model="filteredNode"
+              :placeholder="!filteredCluster ? $v('클러스터를 선택해주세요.') : $v('노드를 선택해주세요.')"
+              :popper-append-to-body="false"
+              @change="() => {
+                isRefreshGrid= true
+                updateMainGrid()
+              }"
+            >
+              <el-option
+                v-for="option in !filteredCluster ? [] : hostOptions"
+                :key="option.hostUuid"
+                :label="option.nodeName"
+                :value="option.hostUuid"
+              />
+            </el-select>
+          </div>
+        </section>
+      </template>
+    </resource-filter-component>
+
+    <section
+      class="table-top-wrap"
+      v-if="!isOnlyGrid"
+    >
+      <total-count
+
+        class="total-count-wrap"
+        :total-count="totalResultCnt"
+      >
+        <div
+          class="flex-wrap"
+          style="gap: 30px;"
+        >
+          <search-component
+            class="search-area"
+            :placeholder="$v('호스트 명')"
+            @search="val => {
+              filteredHostName = val
+              filtering()
+            }"
+          />
+          <el-checkbox
+            class="checkbox-testvm"
+            style="margin-top: 15px;"
+            v-model="testVmState"
+            @change="filtering()"
+          >
+            {{ $v('TEST VM 보기') }}
+          </el-checkbox>
+          <el-checkbox
+            class="checkbox-testvm"
+            style="margin-top: 15px;"
+            v-model="filterCreateTypeRegisterChecked"
+            @change="filtering()"
+          >
+            {{ $v('CMP 외부 생성 자원 보기') }}
+          </el-checkbox>
+        </div>
+      </total-count>
+
+      <section class="button-area -right">
+        <div
+          v-if="checkedVms.length"
+          v-loading="checkedVms ? checkedVms.map(v => v.vmStatus).includes('START') : false"
+          :element-loading-text="$t('common.PLACEHOLDER.workingVm')"
+          element-loading-spinner="el-icon-loading"
+          element-loading-background="rgba(0, 0, 0, 0.8)"
+        >
+          <el-tooltip
+            :disabled="
+              checkedVms[0].exportableOVA
+                && checkedVms[0].defaultOsType !== 'WINDOWS'
+                && checkedVms[0].powerState !== 'ON'
+                && (checkedVms[0].era || checkedVms[0].market ? true : !!checkedVms[0].imageId)"
+            placement="top"
+            effect="light"
+          >
+            <template #content>
+              <span v-if="!checkedVms[0].exportableOVA">
+                <!-- VM Template 기능을 사용할 수 있는 클러스터가 없습니다. -->
+                {{ $t('service.OVA.ALERT.002', { state: 'Export', reason: $t('service.OVA.centralIsNotSupportOVA') }) }}
+              </span>
+              <span v-else-if="checkedVms[0].defaultOsType == 'WINDOWS'">{{ $t('service.OVA.ALERT.002', { state: 'Export', reason: $t('service.OVA.windowResource')}) }}</span>
+              <span v-else-if="checkedVms[0].powerState === 'ON'">{{ $t('service.OVA.ALERT.002', { state: 'Export', reason: 'VM State ON'}) }}</span>
+              <span v-else-if="!checkedVms[0].imageId">
+                <!-- Update로 이미지 정보를 먼저 등록해주세요. -->
+                {{ $t('service.OVA.ALERT.002', { state: 'Export', reason: $t('service.OVA.notImageInfo') }) }}
+              </span>
+            </template>
+            <span v-if="packageType !== 'PL'">
+              <button
+                class="button"
+                :disabled="checkedVms.length > 1
+                  || !checkedVms[0].exportableOVA
+                  || checkedVms[0].defaultOsType === 'WINDOWS'
+                  || checkedVms[0].powerState === 'ON'
+                  || (!checkedVms[0].era && !checkedVms[0].market && !checkedVms[0].imageId)"
+                @click="showModalOVA"
+              >
+                {{ $t('common.BTN.templateExport') }}
+                <!-- 템플릿 추출 -->
+              </button>
+            </span>
+          </el-tooltip>
+          <!-- VM 템플릿 (OVA) export -->
+
+          <button
+            v-if="checkedVms[0].powerState !== 'ON'"
+            class="button"
+            type="is-primary"
+            @click="changePowerState('ON')"
+            style="margin: 0 10px;"
+          >
+            Power On
+          </button>
+          <el-select
+            v-else
+            class="power-state-select"
+            v-model="powerState"
+            placeholder="OFF"
+            :popper-append-to-body="false"
+            popper-class="power-select-popper"
+            @change="changePowerState(powerState)"
+          >
+            <el-option
+              v-for="power in powerOptions"
+              :key="power.value"
+              :label="power.label"
+              :value="power.value"
+            />
+          </el-select>
+          <el-tooltip
+            :disabled="!(checkedVms[0].era && !checkedVms[0].chargeDate)"
+            placement="top"
+            effect="light"
+          >
+            <div
+              slot="content"
+              v-html="$v('해당 자원 update는<br>구성관리 > Database 페이지에서 가능합니다.')"
+            />
+            <span>
+              <button
+                class="button"
+                type="is-primary"
+                :disabled="checkedVms.length > 1
+                  || checkedVms[0] && checkedVms[0].powerState === 'PROGRESS'
+                  || checkedVms[0].era && !checkedVms[0].chargeDate"
+                @click="e => {
+                  modal.controlVm = true
+                  updateVmData = {
+                    beforeData: cloneDeep(checkedVms[0]),
+                    ...checkedVms[0]
+                  }
+                }"
+              >
+                {{ $v('변경') }}
+              </button>
+            </span>
+          </el-tooltip>
+          <el-tooltip
+            :disabled="checkedVms[0].defaultOsType !== 'WINDOWS'
+              && checkedVms[0].powerState !== 'ON'
+              && (checkedVms[0].era || checkedVms[0].market ? true : !!checkedVms[0].imageId)"
+            placement="top"
+            effect="light"
+          >
+            <template #content>
+              <span v-if="checkedVms[0].defaultOsType == 'WINDOWS'">{{ $t('service.OVA.ALERT.002', { state: 'Clone', reason: $t('service.OVA.windowResource')}) }}</span>
+              <span v-else-if="checkedVms[0].powerState === 'ON'">{{ $t('service.OVA.ALERT.002', { state: 'Export', reason: 'VM State ON'}) }}</span>
+              <span v-else-if="!checkedVms[0].era && !checkedVms[0].market && !checkedVms[0].imageId">
+                <!-- Update로 이미지 정보를 먼저 등록해주세요. -->
+                {{ $t('service.OVA.ALERT.002', { state: 'Clone', reason: $t('service.OVA.notImageInfo')}) }}
+              </span>
+            </template>
+            <span style="margin: 0 10px;">
+              <!-- Clone 불가능: OS타입이 WINDOWS 입니다. -->
+              <button
+                class="button"
+                type="is-primary"
+                :disabled="checkedVms.length > 1
+                  || checkedVms[0] && (['ON', 'PROGRESS'].includes(checkedVms[0].powerState)
+                    || checkedVms[0].era
+                    || checkedVms[0].market
+                    || checkedVms[0].defaultOsType === 'WINDOWS'
+                    || !checkedVms[0].imageId)"
+                @click="e => {
+                  if (checkedVms[0].powerState === 'ON') return alert($t('common.ALERT.COMP.033', { state: 'Clone' })) // 전원이 종료된 자원에 대해서만<br>Clone 가능합니다.
+                  else activeClone()
+                }"
+              >
+                {{ $v('복제') }}
+              </button>
+            </span>
+          </el-tooltip>
+          <button
+            class="button"
+            type="is-primary"
+            :disabled="checkedVms.length > 1 || checkedVms[0] && checkedVms[0].powerState === 'PROGRESS'"
+            @click="e => {
+              if (checkedVms[0].powerState !== 'ON') return alert($t('common.ALERT.COMP.034')) // Migrate를 하기 위해서는<br>자원이 On되어있어야 합니다.
+              else modal.migrateVm = true
+            }"
+          >
+            {{ $v('이관') }}
+          </button>
+        </div>
+        <button
+          class="button"
+          type="is-primary"
+          style="margin-left: 10px;"
+          @click="e => {
+            modal.controlVm = true
+            updateVmData = null
+          }"
+        >
+          {{ $v('자원 추가') }}
+        </button>
+      </section>
+    </section>
+
+    <section
+      class="table-area"
+      :element-loading-text="$v('데이터 로딩중\n잠시만 기다려 주십시오.')"
+      v-loading="(!this.interval ? loading.isGetVmRequest : isRefreshGrid) || (filteredData.length && !grid)"
+    >
+      <cmp-grid
+        ref="serverGrid"
+        class="route-detail-grid"
+        :loading="!this.interval ? loading.isGetVmRequest : isRefreshGrid"
+        :item-source="filteredData"
+        :columns="columns"
+        :column-data-map="columnDataMap"
+        :init-custom-action="flex => grid = flex"
+        :custom-init-filter="filter => this.gridFilter = filter"
+        :init-auto-select-row="checkedVms"
+        init-auto-select-row-key="userVmIdx"
+        :use-excel-download="!isOnlyGrid"
+        :changing-page-reset="false"
+        @selectedRow="selectRow(...arguments, columns)"
+        @total-count="cnt => totalResultCnt = cnt"
+        @checkedRowsData="setCheckedItems"
+        @clickDisabledCheckbox="clickDisabled"
+        @changingPage="num => {
+          activePageNum = num
+        }"
+        selectable
+        use-checkbox
+        page-keeping
+      >
+        <template #createType="{ row }">
+          <created-by-cmp-tag v-if="row.createType !== 'REGISTER'" />
+          <span v-else />
+        </template>
+
+        <template #isUrgent="{ row }">
+          {{ row.isUrgent ? '긴급' : '일반' }}
+        </template>
+        <!--  긴급 처리 여부 -->
+
+        <template #osName="props">
+          <set-os-icon
+            v-if="props.row.osName"
+            :os-name="props.row.osName"
+          />
+          <span v-else>-</span>
+        </template>
+
+        <template #powerState="props">
+          <template v-if="props.row.powerState || props.row.vmStatus">
+            <cmp-status-tag
+              :type="props.row.vmStatus === 'START' ? 'is-loading' : {
+                ON: 'is-info',
+                OFF: 'is-undefined',
+              }[props.row.powerState]"
+              :line-style="true"
+              :style="{width: props.row.vmStatus === 'START' ? '75px' : '60px'}"
+            >
+              {{ props.row.vmStatus === 'START' ? 'Progress' : props.row.powerState }}
+            </cmp-status-tag>
+          </template>
+          <span v-else>-</span>
+        </template>
+
+        <template #hostname="props">
+          <div
+            class="hostname-name-wrap"
+            v-if="props.row.hostname"
+          >
+            <span
+              v-if="props.row.createTime > new Date(Date.now() - ( 3600 * 1000 * 24))"
+              class="new-tag-wh"
+            >N</span>
+            <!-- NEW 태그 : 만들어진지 하루 지나면 사라짐 -->
+
+            <span
+              v-if="props.row.isCopy"
+              class="new-tag-wh -copy"
+            >C</span>
+            <!-- COPY 태그 -->
+
+            <span
+              v-if="props.row.deleteDate"
+              class="new-tag-wh -delete"
+            >{{ setDeleteDateState(props.row.deleteDate) }}</span>
+            <!-- 삭제 예정/중/실패 태그 -->
+
+            <cmp-status-tag
+              v-if="props.row.market"
+              type="mp"
+              contents="MP"
+            />
+            <cmp-status-tag
+              v-else-if="props.row.era"
+              type="mp"
+              contents="DB"
+            />
+            <cmp-status-tag
+              v-if="props.row.isSwTest"
+              type="test"
+              contents="TEST"
+            />
+
+            {{ props.row.hostname }}
+          </div>
+          <span v-else>-</span>
+        </template>
+        <!-- 호스트 명 -->
+
+        <template #memory="props">
+          {{ props.row.memory|GB }}
+        </template>
+        <template #vcpu="props">
+          <span>{{ props.row.vcpu }} Core</span>
+        </template>
+
+        <template #hypervisorCpuUsagePpmValue="props">
+          <span v-if="props.row.hypervisorCpuUsagePpmValue === null || props.row.powerState !== 'ON'">-</span>
+          <progress-bar
+            v-else
+            height="20px"
+            :total="1000000"
+            :value="props.row.hypervisorCpuUsagePpm"
+            :notice-percent="60"
+            :alert-percent="80"
+          />
+        </template>
+        <!-- CPU 사용량 -->
+
+        <template #memoryUsagePpmValue="props">
+          <span v-if="props.row.memoryUsagePpmValue === null || props.row.powerState !== 'ON'">-</span>
+          <progress-bar
+            v-else
+            height="20px"
+            :total="1000000"
+            :value="props.row.memoryUsagePpm"
+            :notice-percent="60"
+            :alert-percent="80"
+          />
+        </template>
+        <!-- 메모리 사용량 -->
+
+        <template #externalDiskTotalSize="props">
+          <el-popover
+            v-if="props.row.externalDiskList.length"
+            placement="bottom"
+            width="200"
+            trigger="hover"
+            popper-class="-scroll"
+          >
+            <!-- <div class="more-info-list"> -->
+            <span slot="reference"> {{ props.row.externalDiskTotalSize |byte }} ({{ props.row.externalDiskTotalCount }}EA)</span>
+            <template><pre>{{ props.row.externalDiskList |externalDiskInfo }}</pre></template>
+            <!-- </div> -->
+          </el-popover>
+          <span v-else>{{ props.row.externalDiskTotalSize |byte }} ({{ props.row.externalDiskTotalCount }}EA)</span>
+        </template>
+
+        <template #ips="props">
+          <!-- {{ props.row.ips }} -->
+          <div v-if="props.row.ips && props.row.ips.length">
+            <span
+              v-if="props.row.ips.length > 1"
+            >{{ props.row.ips[0] }} {{ $v('외') }}
+              <el-tooltip
+                placement="bottom-end"
+                popper-class="panel-title-popper"
+                effect="light"
+              >
+                <template #content>
+                  <span v-html="ipHtml(props.row.ips)" />
+                </template>
+                <a class="-link">{{ props.row.ips.length - 1 }}</a>
+              </el-tooltip>
+            </span>
+
+            <span v-else>{{ props.row.ips[0] }}</span>
+          </div>
+          <span v-else>-</span>
+          <small
+            v-if="props.row.nics && props.row.nics.length"
+            style="white-space: nowrap;"
+          >
+            ({{ props.row.nics[0].cateKey || '-' }})
+          </small>
+        </template>
+      </cmp-grid>
+    </section>
+
+    <!-- 모달 -->
+    <!-- 자원 추가 -->
+    <el-dialog
+      :visible.sync="modal.controlVm"
+      :title="updateVmData
+        ? `${$v('자원 변경')}`
+        : `${$v('자원 추가')}`"
+      :before-close="beforeCloseModal"
+      width="1300px"
+      top="5vh"
+      @close="modal.controlVm = false"
+    >
+      <nx-compute-update-form
+        v-if="modal.controlVm"
+        v-loading="loading.createVm || loading.updateVm"
+        :data="updateVmData"
+        :project-idx="updateVmData
+          ? updateVmData.projectIdx
+          : (selectedProjectInfo ? selectedProjectInfo.projectIdx : undefined)"
+        :user-info="user"
+        @close="modal.controlVm = false"
+        @save="confirmUpdate"
+        in-admin
+        :height="(updateVmData && updateVmData.market) ? 'calc(70vh - 186px)' : '70vh'"
+      />
+    </el-dialog>
+
+    <!-- 자원 복사 -->
+    <el-dialog
+      v-loading="loading.cloneVm"
+      :visible.sync="modal.cloneVm"
+      :before-close="beforeCloseModal"
+      :title="$t('common.TERMS.resourceClone')"
+      width="1100px"
+      top="5vh"
+      @close="modal.cloneVm = false"
+    >
+      <clone-vm
+        v-if="modal.cloneVm"
+        :vm-data="checkedVms[0]"
+        :is-ipam="cloneItemIsIpam"
+        @save="confirmClone"
+        @close="modal.cloneVm = false"
+      />
+    </el-dialog>
+
+    <!-- 자원 이관 -->
+    <el-dialog
+      :visible.sync="modal.migrateVm"
+      :title="$t('common.TERMS.resourceMigration')"
+      :before-close="beforeCloseModal"
+      width="1100px"
+      top="5vh"
+      @close="modal.migrateVm = false"
+      v-loading="loading.migrateVm"
+    >
+      <migrate-vm
+        v-if="modal.migrateVm"
+        :vm-data="checkedVms[0]"
+        @save="confirmMigrate"
+        @close="modal.migrateVm = false"
+      />
+    </el-dialog>
+
+    <!-- OVA Export -->
+    <el-dialog
+      :title="$t('config.VM.createVmTemplate')"
+      width="800px"
+      :visible.sync="modal.ova"
+      @close="ovaName = ''"
+    >
+      <div class="ova-export">
+        <register-contents
+          :title="$t('service.OVA.templateName')"
+          type="input"
+          required
+        >
+          <el-input
+            :disabled="isLoadingExportOVA"
+            :placeholder="$v('VM 템플릿명')"
+            v-model="ovaName"
+            maxlength="64"
+            show-word-limit
+          />
+        </register-contents>
+      </div>
+      <section class="modal-button-area">
+        <button
+          class="button"
+          type="is-anti"
+          @click="modal.ova = false"
+          :disabled="isLoadingExportOVA"
+        >
+          {{ $v('취소') }}
+        </button>
+        <button
+          class="button"
+          type="is-primary"
+          @click="exportOVA"
+          :disabled="isLoadingExportOVA"
+          v-loading="isLoadingExportOVA"
+        >
+          {{ $v('생성') }}
+        </button>
+      </section>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import API, { SetOSIcon, ResourceFilterComponent, NXComputeUpdateForm } from '@sd-fe/cmp-core'
+import Dayjs from 'dayjs'
+import { mapState } from 'vuex'
+import { uniq, cloneDeep } from 'lodash'
+import { SortDescription } from '@grapecity/wijmo'
+import CreateByCMPTag from '@/components/Tag/CreateByCMPTag'
+import CloneVm from './CloneVm/CloneVm'
+import MigrateVm from './MigrateVm/MigrateVm'
+import SetResourceServerMixins from './SetResourceServer.mixins.js'
+
+export default {
+  name: 'SetResourceServerList',
+  mixins: [SetResourceServerMixins],
+  components: {
+    'set-os-icon': SetOSIcon,
+    ResourceFilterComponent,
+    'created-by-cmp-tag': CreateByCMPTag,
+    'nx-compute-update-form': NXComputeUpdateForm,
+    CloneVm,
+    MigrateVm
+  },
+  props: {
+    isOnlyGrid: {
+      type: Boolean,
+      default: false
+    },
+    searchedTags: {
+      type: Array,
+      default () {
+        return []
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      user: state => state.auth.user,
+      packageType: state => state.auth.packageType
+    })
+  },
+  watch: {
+    searchedTags: {
+      immediate: true,
+      deep: true,
+      handler (val) {
+        this.filteredData = this.filterGridSearchedTags(val)
+      }
+    },
+    activePageNum: {
+      handler (num) {
+        sessionStorage.setItem('configServerGridPage', num)
+      }
+    },
+    filteredCluster: {
+      immediate: true,
+      handler (clusterUuid) {
+        if (!clusterUuid) this.filteredNode = null
+        this.getHostList(clusterUuid)
+      }
+
+    }
+  },
+  async created () {
+    await this.getClusters()
+  },
+  async mounted () {
+    if (this.$route?.query) this.setQuery(this.$route.query)
+    else this.filteredData = [...this.tableData]
+
+    await this.init()
+
+    this.$nextTick(function () {
+      const initGridPage = sessionStorage.getItem('configServerGridPage')
+      if (initGridPage && this.$refs.serverGrid) this.$refs.serverGrid.changingPage(Number(initGridPage))
+    })
+  },
+  beforeDestroy () {
+    this.clearGetVmInterval()
+  },
+  methods: {
+    cloneDeep (val) { return cloneDeep(val) },
+
+    filterGridSearchedTags (searchedTags) {
+      let result = cloneDeep(this.initList)
+
+      // 검색된 자원태그가 없을경우 빈 배열을 반환합니다.
+      if (!searchedTags || searchedTags.length === 0) {
+        return []
+      }
+
+      result = this.initList.filter((el) => {
+        return searchedTags.some((tags) =>
+          tags.serviceType === 'COMPUTE' && String(el.userVmIdx) === tags.resourceId
+        )
+      })
+      // 자원태그 검색화면에서 사용하는 이벤트입니다.
+      this.$emit('change', result.length || 0)
+      return result
+    },
+    /**
+     * router 쿼리 있을 경우, 세팅
+     */
+    setQuery (query) {
+      if (query?.clusterUuid) this.filteredCluster = query.clusterUuid
+      if (query?.hostUuid) this.filteredNode = query.hostUuid
+    },
+    async exportOVA () {
+      if (!this.ovaName) return this.$alert(this.$v('템플릿 명을 입력해주세요.'), () => false)
+
+      try {
+        this.isLoadingExportOVA = true
+
+        const data = this.checkedVms[0]
+
+        const reqObj = {
+          beforePrice: data?.beforePrice || 0,
+          groupIdx: this.user.userGroup,
+          groupName: this.user.userGroupName,
+          isUrgent: !!data?.isUrgent, // 긴급 여부(긴급 = true, 일반 = false)
+          price: data?.price || 0,
+          projectIdx: data.projectIdx,
+          requestData: {
+            name: this.ovaName
+          }, // 기존 orderData
+          service: 'NX_VM_TEMPLATE',
+          // ...(data?.market && { service: 'MARKET' }),
+          // ...(data?.era && { service: 'DATABASE' }),
+          userId: this.user.userId,
+          userName: this.user.userName
+        }
+
+        const result = await API.work_v3.exportNxOVA(this.checkedVms[0].vmUuid, reqObj)
+        if (result) this.$alert(this.$v('성공적으로 VM 템플릿을 Export하였습니다.'), () => false)
+        this.modal.ova = false
+      } catch (error) {
+        console.log(error)
+        this.$alert(this.$v('VM 템플릿 Export 실패하였습니다.'), () => false)
+      } finally {
+        this.isLoadingExportOVA = false
+      }
+    },
+    showModalOVA () {
+      if (this.checkedVms.length > 1) return
+      this.modal.ova = !this.modal.ova
+    },
+    init () {
+      this.getVmList()
+      // this.$refs.grid.setAutoSelectRow(this.grid)
+    },
+    async getVmList (params = {}) {
+      try {
+        this.loading.isGetVmRequest = true
+        if (this.selectedProjectInfo) params = this.selectedProjectInfo
+        params.isProgress = true // vm 조회할 떄  isProgress=true 추가 요청 (21.09.10 진범차장님)
+        const data = await API.compute.getVms(params)
+        // console.log(data.filter(item => item.vmStatus === 'START'))
+
+        await this.vmInfoSetting(data)
+        if (!this.isOnlyGrid) this.getVmInterval()
+      } catch (error) {
+        console.error(error)
+        // const message = (error.response && error.response.data) ? error.response.data.message : error.message
+        this.tableData = []
+        // this.$alert(message)
+        throw error
+      } finally {
+        this.loading.isGetVmRequest = false
+      }
+    },
+    async vmInfoSetting (data) {
+      if (!data) {
+        this.tableData = []
+        return
+      }
+
+      const list = []
+      const allVmStatus = []
+
+      const mappedExternals = []
+
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].nicIps?.length) {
+          // data[i].ips = data[i].nicIps.filter(ip => ip.nicIpType === 'ASSIGNED')
+          const allIps = data[i].nicIps.map(ip => { return ip.ipAddress || ip.nicIp })
+          data[i].ips = uniq(allIps)
+        }
+        data[i].hostname = data[i].vmName || data[i].computeName || data[i].hostname
+        data[i].osType = data[i].osType || '-' // OS 타입
+        data[i].osBit = data[i].osBit || '-' // OS Bit
+        data[i].vcpu = data[i].numVcpus || (data[i].vcpu * data[i]?.socket) || 0 // vCPU (numVcpus: vcpu 전체 코어 수, vcpu: soket 당 코어 수)
+        data[i].memory = this.$options.filters.byteToGb(data[i].memoryCapacityInBytes) || data[i].memory // Memory
+
+        // CPU 사용량
+        if (!data[i].hypervisorCpuUsagePpm) data[i].hypervisorCpuUsagePpmValue = 0
+        else if (data[i].hypervisorCpuUsagePpm < 0) data[i].hypervisorCpuUsagePpmValue = null
+        else {
+          const cpuUsageValue = data[i].hypervisorCpuUsagePpm / 10000
+          data[i].hypervisorCpuUsagePpmValue = Number(cpuUsageValue.toFixed(2))
+        }
+        // 메모리 사용량
+        if (!data[i].memoryUsagePpm) data[i].memoryUsagePpmValue = 0
+        else if (data[i].memoryUsagePpm < 0) data[i].memoryUsagePpmValue = null
+        else {
+          const memUsageValue = data[i].memoryUsagePpm / 10000
+          data[i].memoryUsagePpmValue = Number(memUsageValue.toFixed(2))
+        }
+
+        if (data[i].era) {
+          data[i].createType = data[i].era?.createType
+          data[i].osType = data[i].era.reqInfo?.osType
+          data[i].osBit = data[i].era.reqInfo?.osPlatform
+          data[i].osName = data[i].era.reqInfo?.osName
+        }
+        if (data[i].market) {
+          // data[i].osType = data[i].market.reqInfo?.osType
+          // data[i].osBit = data[i].market.reqInfo?.osBit
+          // data[i].osName = data[i].market.reqInfo?.osName
+        }
+
+        // Local Disk
+        data[i].externalDiskTotalSize = 0
+        data[i].externalDiskTotalCount = 0
+        data[i].externalDiskList = []
+        if (data[i].disks) {
+          data[i].rootDisk = {}
+          for (let j = 0; j < data[i].disks.length; j++) {
+            if (
+              data[i].disks[j].isCdrom ||
+              (data[i].disks[j].deviceType === 'CDROM' || data[i].disks[j].deviceBus === 'IDE')
+            ) continue
+            data[i].disks[j].diskSize = this.$options.filters.byteToGb(data[i].disks[j].vmDiskSize)
+            data[i].disks[j].size = this.$options.filters.byteToGb(data[i].disks[j].vmDiskSize)
+            if ((data[i].disks[j].deviceIndex === 0 || data[i].disks[j].diskIndex === 0) && data[i].disks[j].deviceBus === 'SCSI') {
+              data[i].rootDisk = data[i].disks[j]
+            } else {
+              data[i].externalDiskList.push(data[i].disks[j])
+              data[i].externalDiskTotalCount++
+              if (data[i].disks[j].vmDiskSize) {
+                data[i].externalDiskTotalSize += data[i].disks[j].vmDiskSize
+              }
+            }
+          }
+          mappedExternals.push({ value: data[i].externalDiskTotalSize, caption: this.$options.filters.byte(data[i].externalDiskTotalSize) })
+        }
+        data[i].rootDiskSize = data[i].rootDisk?.diskSize || data[i].rootDiskSize || 0 // rootDiskSize (생성 전인 vm)
+        data[i].rootDiskTd = `${data[i].rootDiskSize} GB`
+
+        if (data[i].osType) data[i].defaultOsType = ['WINDOWS', 'LINUX', 'UBUNTU', 'CENTOS', 'RHEL'].find(os => data[i].osType.includes(os))
+
+        data[i].checked = this.checkedVmsUserVmIdx.includes(data[i].userVmIdx)
+        data[i].isUnregistered = (data[i].ova || data[i].market || data[i].era)
+          ? false
+          : data[i]?.chargeDate === undefined
+
+        list.push(data[i])
+        allVmStatus.push(data[i].vmStatus)
+      }
+
+      this.tableData = [...list].sort((a, b) => {
+        const isNew = (item) => item.createTime > new Date(Date.now() - (3600 * 1000 * 24))
+
+        if (isNew(a) < isNew(b)) return 1
+        else if (isNew(a) > isNew(b)) return -1
+        else return 0
+      })
+      await this.setCheckedItems(this.checkedVms)
+      if (this.isOnlyGrid) {
+        this.initList = cloneDeep(this.tableData)
+        this.$emit('getGrid', true)
+      } else { await this.getVmInterval() }
+      this.columnDataMap.externalDiskTotalSize = Array.from(new Set(mappedExternals))
+    },
+
+    routeTo (to) {
+      this.$router.push(to)
+    },
+    selectRow (row, columns) {
+      // console.log('선택 row: ', row.dataItem)
+      this.routeTo({
+        name: 'set-resource-server-detail',
+        params: {
+          userVmIdx: row.dataItem.userVmIdx,
+          companyInfo: row.dataItem.companyInfo
+        }
+      })
+      sessionStorage.setItem('configServerGridPage', this.activePageNum)
+    },
+    ipHtml (ipList) {
+      if (ipList.length <= 1) return
+      let ips = ''
+      for (let i = 1; i < ipList.length; i++) {
+        ips += ipList[i] + '<br>'
+      }
+      return ips
+    },
+    async searchCompute (payload) {
+      this.selectedProjectInfo = payload
+      this.isRefreshGrid = true
+      this.isProgressVm = false
+      await this.init()
+    },
+    /**
+     * 체크 된 항목 컨트롤
+     */
+    setCheckedItems (items) {
+      // 체크된 vm이 OVA Export 가능한 central에 속해있는지? 가능 여부 .exportableOVA에 담음
+      this.checkedVms = items.map(vm => {
+        let exportableOVA
+        if (vm.isSupportOva !== undefined) {
+          exportableOVA = vm.isSupportOva
+        } else {
+          let vmCentral
+
+          for (let i = 0; i < this.nxCentrals.length; i++) {
+            const vmCluster = this.nxCentrals[i]?.elements?.find(el => el.elementIdx === vm.elementIdx)
+            if (vmCluster) {
+              vmCentral = this.nxCentrals[i]
+              break
+            }
+          }
+          exportableOVA = !!vmCentral?.isSupportOva
+        }
+
+        return {
+          ...vm,
+          exportableOVA
+        }
+      })
+
+      // console.log('@체크된 친구들: ', this.checkedVms)
+
+      this.checkedVmsUserVmIdx = items.map(item => item.userVmIdx)
+
+      for (let i = 0; i < this.tableData.length; i++) {
+        const row = this.tableData[i]
+
+        row.checked = this.checkedVmsUserVmIdx.includes(row.userVmIdx)
+        row.disable = this.checkedVms.length >= 1
+          ? !!(row.powerState !== this.checkedVms[0].powerState || row.vmStatus === 'START' || row.deleteDate || row.isUrgent) // vm 상태가 다르거나 Progress 상태거나 삭제 예정이거나 긴급 자원
+          : !!(row.vmStatus === 'START' || row.deleteDate || row.isUrgent) // Progress 상태거나 삭제 예정(deleteDate o) 이거나 긴급 자원
+      }
+
+      this.updateMainGrid()
+    },
+    /**
+     * 그리드의 disable 체크박스 클릭 시, 발생 이벤트
+     */
+    clickDisabled (row) {
+      if (row.deleteDate) return this.$alert(this.$v('삭제 예정 자원입니다.'), () => false)
+      if (row.vmStatus === 'START') return this.$alert(this.$v('작업 중인 자원입니다.'), () => false)
+      if (row.isUrgent) return this.$alert('긴급 자원은 읽기만 가능합니다.', () => false)
+      this.$alert(this.$v('같은 상태의 VM만<br>다중 선택이 가능합니다.'), {
+        dangerouslyUseHTMLString: true,
+        callback: () => false
+      })
+    },
+    /**
+     * 호스트명, VM 상태, 클러스터, 노드 필터링 이벤트
+     */
+    filtering () {
+      if (
+        !this.filteredVmState &&
+        !this.filteredCluster &&
+        !this.filteredHostName &&
+        this.filteredIsUrgent === '' &&
+        !this.testVmState &&
+        !this.filterCreateTypeRegisterChecked
+      ) this.filteredData = this.tableData
+      else {
+        this.filteredData = this.tableData.filter(item => {
+          let result = true
+          // VM 상태
+          if (this.filteredVmState) result = result && (item.powerState === this.filteredVmState)
+
+          // 클러스터
+          if (this.filteredCluster) result = result && (item.clusterUuid === this.filteredCluster)
+
+          // 노드
+          if (this.filteredNode) result = result && (item.hostUuid === this.filteredNode)
+
+          // 호스트 명
+          if (this.filteredHostName) result = result && (item.hostname?.toLowerCase().includes(this.filteredHostName?.toLowerCase()))
+
+          // 분류
+          if (typeof this.filteredIsUrgent === 'boolean') result = result && (item.isUrgent === this.filteredIsUrgent)
+          // test VM 체크유무
+          if (this.testVmState) result = result && (item.isSwTest === this.testVmState)
+
+          // CMP 외부 생성 자원 보기 (미등록 -> 등록)
+          if (this.filterCreateTypeRegisterChecked) result = result && (item.createType === 'REGISTER')
+
+          return result
+        })
+      }
+    },
+    /**
+     * filteredData를 세팅합니다.
+     * 세팅 전, 그리드의 sorting / filtering 상태를 기억했다가 filteredData 세팅 후 다시 설정해줍니다.
+     */
+    async updateMainGrid () {
+      await this.onSaveGridState()
+      await this.filtering()
+      if (this.originGridState) await this.onRestoreGridState()
+      this.isRefreshGrid = false
+    },
+    /**
+     * powerState 전환 이벤트
+     * @param {String} state 전환 할 상태
+     */
+    async changePowerState (state) {
+      const result = await this.confirmConvertPower(this.checkedVms, state)
+      if (result) {
+        this.setCheckedItems([])
+      } else {
+        this.powerState = this.checkedVms[0].powerState === 'ON' ? null : this.checkedVms[0].powerState
+      }
+    },
+    /**
+     * VM Migrate 데이터 가공 이벤트
+     */
+    async confirmMigrate (param) {
+      const requestData = {
+        userVmIdx: param.vmData.userVmIdx,
+        vmUuid: param.vmData.vmUuid,
+        computeName: param.vmData.computeName,
+        hostUuid: param.destNode.hostUuid,
+        nodeName: param.destNode.nodeName,
+        updateUserId: this.user.userId,
+        updateUserName: this.user.userName
+      }
+
+      const payload = {
+        beforePrice: param.vmData?.beforePrice || 0,
+        groupIdx: param.vmData.groupIdx,
+        groupName: param.vmData.groupName,
+        isUrgent: param.vmData.isUrgent || false, // 긴급 여부(긴급 = true, 일반 = false)
+        price: param.vmData?.price || 0,
+        projectIdx: param.vmData.projectIdx,
+        service: 'COMPUTE',
+        ...(param.vmData?.market && { service: 'MARKET' }),
+        ...(param.vmData?.era && { service: 'DATABASE' }),
+        userId: this.user.userId,
+        userName: this.user.userName,
+        requestData
+      }
+
+      const result = await this.migrateVm(payload)
+      if (result) this.setCheckedItems([])
+    },
+    /**
+     * VM Clone 데이터 가공 이벤트
+     */
+    async confirmClone ({ vmData, cloneVms }) {
+      this.$confirm(this.$v('자원을 복제하시겠습니까?')).then(async () => {
+        // this.$alert(this.$t('common.ALERT.COMP.039'), { dangerouslyUseHTMLString: true }) // 입력하지 않은 데이터는<br>기존 자원 정보 데이터로 대체됩니다.
+        const result = await this.cloneVm(vmData.userVmIdx, cloneVms)
+        if (result) {
+          this.modal.cloneVm = false
+          this.setCheckedItems([])
+        }
+      }).catch(() => false)
+    },
+    /**
+     * VM 생성/수정 시, '저장'
+     */
+    confirmUpdate (saveData) {
+      const isNew = !saveData?.userVmIdx
+
+      const {
+        beforePrice,
+        isUrgent,
+        price,
+        tagInfo,
+        ...rest
+      } = saveData
+
+      let service = 'COMPUTE'
+      if (saveData?.ovaUuid && isNew) service = 'COMPUTE_BY_TEMPLATE' // ovaUuid가 있고, 생성일 때
+      else if (saveData?.market) service = 'MARKET'
+      else if (saveData?.era) service = 'DATABASE'
+
+      const payload = {
+        beforePrice,
+        groupIdx: saveData.groupId,
+        groupName: saveData.groupName,
+        isUrgent: !!isUrgent, // 긴급 여부(긴급 = true, 일반 = false)
+        price,
+        projectIdx: saveData.projectId,
+        requestData: {
+          ...rest,
+          ...(isNew ? {
+            tagInfo: tagInfo || []
+          } : {
+            vmUuid: saveData.vmUuid
+          })
+        },
+        service,
+        userId: this.user.userId,
+        userName: this.user.userName
+      }
+
+      let message
+      isNew ? message = this.$v('자원을 생성하시겠습니까?') : message = this.$v('자원을 수정하시겠습니까?')
+      this.$confirm(message).then(async () => {
+        console.log('nx VM 생성.confirm:', payload)
+        if (isNew) {
+          /* */
+          const result = await this.createVm(payload)
+          if (result) this.modal.controlVm = false
+        } else {
+          const result = await this.updateVm(payload)
+          if (result) {
+            this.modal.controlVm = false
+            this.setCheckedItems([])
+          }
+        }
+      }).catch(() => false)
+    },
+
+    /**
+   * [클론] 발생 이벤트
+   */
+    async activeClone () {
+      if (this.checkedVms.length !== 1) return
+
+      const isIpam = await this.checkIsIpam(this.checkedVms[0])
+      this.cloneItemIsIpam = isIpam
+
+      if (!isIpam) {
+        // this.$alert(this.$t('common.ALERT.COMP.043'), { // 해당 자원은 Static IP를 사용하고 있어,<br>Clone 후 각 자원 별로 뉴타닉스 Prism 내의<br>Web Clone 을 통해 접속 후<br>개별 Static IP 수정이 필요합니다.
+        //   dangerouslyUseHTMLString: true,
+        //   callback: () => { this.modal.cloneVm = true }
+        // })
+        this.modal.cloneVm = true
+      } else this.modal.cloneVm = true
+    },
+    gridRefresh (grid = this.grid) {
+      if (!grid) return
+      const cv = grid.collectionView
+      if (!cv) return
+      cv.refresh()
+    },
+    /**
+     * 선택한 vm이 IPAM을 통해 만들어진 VM인지 체크합니다.
+     * @return {Boolean} true: IPAM / false: Static한 IP
+     */
+    async checkIsIpam (vm) {
+      const clusters = this.clusters
+      const clsSubnets = clusters.find(cls => cls.clusterUuid === vm.clusterUuid)?.subnets
+      if (!clsSubnets) return true
+      const subnet = vm.nics?.length ? clsSubnets.find(sb => sb.subnetUuid === vm.nics[0]?.subnetUuid) : null
+      const isIpam = subnet ? !!subnet.subnetPools : false
+
+      return isIpam
+    },
+    /**
+     * 클러스터 데이터를 가져옵니다.
+     */
+    async getClusters () {
+      try {
+        this.loading.cluster = true
+        const clusters = await API.compute.getClusters()
+        this.clusters = clusters || []
+        const clusterOptions = this.clusters.map(({ clusterUuid, clusterName }) => { return { clusterUuid, clusterName } })
+        this.clusterOptions = [
+          { clusterUuid: null, clusterName: this.$t('main.DASHBOARD.all') }, // 전체
+          ...clusterOptions
+        ]
+      } catch (error) {
+        this.$alert(this.$t('common.ALERT.NUTA.009'), {
+          confirmButtonText: this.$t('common.BTN.confirm')
+        })
+        throw error
+      } finally {
+        this.loading.cluster = false
+      }
+    },
+    /**
+     * 호스트 데이터를 가져옵니다.
+     */
+    async getHostList (clusterUuid) {
+      try {
+        this.loading.cluster = true
+        const hosts = await API.compute.getHostList({ clusterUuid })
+        const hostOptions = hosts
+          ? hosts.map(({ nodeName, hostUuid }) => {
+            return { nodeName, hostUuid }
+          })
+          : []
+
+        this.hostOptions = [
+          { hostUuid: null, nodeName: this.$t('main.DASHBOARD.all') }, // 전체
+          ...hostOptions
+        ]
+      } catch (error) {
+        this.$alert(this.$t('common.ALERT.NUTA.009'), {
+          confirmButtonText: this.$t('common.BTN.confirm')
+        })
+        throw error
+      } finally {
+        this.loading.cluster = false
+      }
+    },
+
+    /**
+     * interval 전 그리드 sorting/filtering 저장
+     */
+    onSaveGridState () {
+      if (!this.grid?.collectionView || !this.gridFilter) return
+      const state = {
+        filterDefinition: this.gridFilter.filterDefinition,
+        sortDescriptions: this.grid.collectionView.sortDescriptions.map((sortDesc) => {
+          return {
+            property: sortDesc.property,
+            ascending: sortDesc.ascending
+          }
+        })
+      }
+      this.originGridState = JSON.stringify(state)
+    },
+    /**
+     * 저장 되었던 그리드 sorting/filtering 복구
+     */
+    onRestoreGridState () {
+      const json = this.originGridState
+      if (!json) return
+      const state = JSON.parse(json)
+      this.gridFilter.filterDefinition = state.filterDefinition
+      const view = this.grid.collectionView
+      if (!view) return
+      view.deferUpdate(() => {
+        view.sortDescriptions.clear()
+        for (let i = 0; i < state.sortDescriptions.length; i++) {
+          const sortDesc = state.sortDescriptions[i]
+          view.sortDescriptions.push(
+            new SortDescription(sortDesc.property, sortDesc.ascending)
+          )
+        }
+      })
+    },
+    /**
+     * deleteDate 존재 데이터에 삭제 예정/중/실패 표기
+     */
+    setDeleteDateState (deleteDate) {
+      const today = Dayjs().format('YYYY-MM-DD')
+      const delDate = Dayjs(deleteDate).format('YYYY-MM-DD')
+      const isBeforeDelDate = Dayjs(today).isBefore(delDate)
+      if (isBeforeDelDate) return this.$t('task.TODO.beDeleted') // '삭제 예정' : 삭제 일 > 오늘
+      else if (Dayjs(today).isSame(delDate)) return this.$t('common.TERMS.deleting') // '삭제 중' : 삭제 일 = 오늘
+      else if (!isBeforeDelDate) return this.$t('common.ALERT.BASE.038')// '삭제 실패' : 삭제 일 < 오늘
+    },
+    alert (message, callback) {
+      this.$alert(message, '알림', {
+        callback: callback,
+        dangerouslyUseHTMLString: true
+      })
+    }
+  },
+  data (root) {
+    return {
+      grid: null,
+
+      initList: [],
+      isLoadingExportOVA: false,
+      ovaName: '', // OVA Name
+      activePageNum: 1,
+      isProgressVm: false,
+      isRefreshGrid: false,
+      totalResultCnt: 0,
+      loading: {
+        isGetVmRequest: false,
+        createVm: false,
+        convertVmPower: false,
+        cluster: false
+      },
+      clusters: [], // 전체 클러스터
+      clusterOptions: [],
+      hostOptions: [],
+      isUrgentOptions: [
+        { value: '', label: '전체' },
+        { value: false, label: '일반' },
+        { value: true, label: '긴급' }
+      ],
+      originGridState: null, // 인터벌 돌기 전, 그리드의 sorting/filtering 상태 저장
+
+      filteredVmState: '', // 핉터링 > VM 상태
+      filteredCluster: null, // 필터링 > 클러스터
+      filteredNode: null, // 필터링 > 노드
+      filteredHostName: '', // 필터링 > 호스트명
+      filteredIsUrgent: '', // 필터링 > 구분
+      testVmState: false, // 필터링 > test Vm 보기
+      filterCreateTypeRegisterChecked: false, // 필터링 > CMP 외부 생성 자원 보기 (미등록 -> 등록)
+      powerState: '', // 버튼 영역 > 파워 상태 선택
+
+      checkedVms: [], // 체크한 vms
+      checkedVmsUserVmIdx: [],
+      modal: {
+        controlVm: false, // vm 생성/변경 모달 active Handler
+        cloneVm: false, // vm 복제
+        migrateVm: false, // vm 이관
+        ova: false // OVA Export
+      },
+      updateVmData: null, // 업데이트 할 vm정보 (create일 때 null)
+      cloneItemIsIpam: true, // 클론하는 vm이 IPAM 자원인지?
+
+      // compute 데이터
+      columns: [
+        { binding: 'createType', header: ' ', width: 60, customHtml: true, filtable: false },
+        { binding: 'projectName', header: root.$v('프로젝트 명'), align: 'left' },
+        { binding: 'isUrgent', header: root.$v('긴급 처리 여부'), width: 60, customHtml: true },
+        { binding: 'hostname', header: root.$v('호스트명'), width: 150, align: 'left', customHtml: true },
+        { binding: 'powerState', header: root.$v('상태'), width: 100, customHtml: true },
+        { binding: 'ips', header: 'IP', width: '*', customHtml: true },
+        { header: root.$v('이미지 이름'), binding: 'osName', width: 130, customHtml: true },
+        { header: root.$v('OS 타입'), binding: 'osType', width: 90 },
+        { header: 'OS Bit', binding: 'osBit' },
+        { binding: 'vcpu', header: 'vCPU(Core)', width: 90, customHtml: true },
+        { binding: 'hypervisorCpuUsagePpmValue', header: root.$v('vCPU 사용량(%)'), width: 150, customHtml: true },
+        { binding: 'memory', header: 'Memory(GB)', width: 90, customHtml: true },
+        { binding: 'memoryUsagePpmValue', header: root.$v('Memory 사용량(%)'), width: 150, customHtml: true },
+        { binding: 'rootDiskTd', header: 'RootDisk', width: 100 },
+        { binding: 'externalDiskTotalSize', header: 'ExternalDisk', width: 100, customHtml: true }
+      ],
+      tableData: [],
+      filteredData: [],
+      selectedProjectInfo: null,
+      columnDataMap: {
+        externalDiskTotalSize: null,
+        isUrgent: [
+          { value: true, caption: '긴급' },
+          { value: false, caption: '일반' }
+        ]
+      },
+      // vm 상태 옵션
+      vmStateOptions: [
+        { value: '', label: this.$i18n.locale === 'en' ? 'All' : '전체' },
+        { value: 'ON', label: 'ON' },
+        { value: 'OFF', label: 'OFF' }
+      ]
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.ova-export {
+  .register-contents {
+    &::v-deep .contents-title {
+      min-width: 130px;
+      width: 130px;
+    }
+  }
+  .el-input::v-deep .el-input__inner { padding: 0 55px 0 15px; }
+}
+
+.set-resource-server-list {
+  .hostname-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .total-count-wrap {
+    align-items: flex-start;
+    flex-direction: column;
+    .search-area { margin-top: $gap-s; }
+  }
+
+  // 카테고리 모달
+  .el-popper.power-select-popper {
+    padding-top: 5px;
+    width: 120px;
+    border-radius: $radius-s;
+    background-color: transparent;
+    border: none;
+    > .el-scrollbar {
+      > .el-select-dropdown__wrap.el-scrollbar__wrap {
+        padding: 0;
+        .el-select-dropdown__list {
+          padding: 5px 0;
+          > .el-select-dropdown__item {
+            padding: 0 $gap-s;
+            text-align: left;
+            font-size: 12px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.new-tag-wh {
+  display: inline-block;
+  padding: 0 3px;
+  width: 16px;
+  min-height: 16px;
+  line-height: 14px;
+  text-align: center;
+  color: $white;
+  font-weight: bold;
+  background-color: $primary;
+  border: 1px solid $primary;
+  // border-radius: 11px;
+  font-size: 11px;
+  &.-copy {
+    background-color: #3C7D4F;
+    border-color: #3C7D4F;
+  }
+  &.-delete {
+    padding: 0 2px;
+    width: auto;
+    font-weight: normal;
+    // color: $main-sred;
+    background-color: $input-placeholder;
+    border-color: $input-placeholder;
+  }
+}
+</style>
+
+<style lang="scss">
+.set-resource-server-list {
+  .button-area {
+    > div.el-loading-parent--relative {
+      .el-loading-mask { z-index: 1; }
+      .el-loading-spinner {
+        position: relative;
+        top: auto;
+        margin-top: 0;
+        .el-icon-loading {
+          position: absolute;
+          left: 260px;
+          margin-top: 2px;
+          transform: translateX(-50%);
+        }
+        .el-loading-text { margin-top: 7px; }
+      }
+    }
+  }
+
+  .table-area { min-height: 500px; }
+
+  // 인터벌 + 페이지네이션 때 알 수 없는 스크롤바 생김 방지
+  .route-detail-grid {
+    .wj-content {
+      & > div {
+        div[wj-part=root] {
+          overflow: hidden !important;
+          .wj-cell > div { white-space: nowrap !important; }
+        }
+      }
+    }
+  }
+
+  .power-state-select { // Power Off 영역
+    width: 120px;
+    margin: 0 $gap-s;
+    > .el-input {
+      &.el-input--suffix {
+        > .el-input__inner {
+            &:focus {
+            background-color: darken($primary, 5%);
+            color: $white;
+          }
+        }
+      }
+      &.is-focus {
+        > .el-input__inner {
+          background-color: darken($primary, 5%);
+          color: $white;
+            &:focus {
+            color: $white;
+            background-color: darken($primary, 5%);
+          }
+        }
+      }
+      > .el-input__inner {
+        padding: 5px 10px 5px 15px;
+        min-width: 30px;
+        background-color: $primary;
+        border: 1px solid $primary;
+        font-size: 12px;
+        text-align: left;
+        color: $white;
+        &::placeholder {
+          color: $white;
+        }
+      }
+      > .el-input__suffix {
+        display: flex;
+        align-items: center;
+        right: 0;
+        color: $white;
+      }
+    }
+
+    .el-input.is-disabled {
+      > .el-input__inner {
+        background-color: $main-gray;
+        border-color: $main-gray;
+        opacity: .5;
+        color:$color-grey;
+        &:hover {
+          background-color: $main-gray;
+          border-color: $main-gray;
+        }
+      }
+    }
+  }
+}
+</style>

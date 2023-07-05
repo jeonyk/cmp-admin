@@ -1,0 +1,142 @@
+// @import './mixins.scss';
+
+//
+$blue: #32a1ff;
+$line-gray: #e0e0e0;
+$section-stroke: #c9c9c9;
+$bg-d: #fafafa;
+
+
+$main-red: #FA5657;
+$main-gray: #39394B;
+$dark-gray: #1F1E32;
+$dark-navy: #0A0C20;
+$main-blue: #7681FF;
+$light-gray: #E1E1E1;
+
+
+$main-black: #393d41;
+
+$yellow: #F4A462;
+$violet: #8973FF;
+$green: #48c774;
+$deepGreen: #59a51d;
+$sea-blue: #1977D2;
+$purple-gray: #3D435E;
+$border2A: #2A2D44;
+$slate: #94959f;
+$dark-slate: #2A2D44;
+$white: #fff;
+$black: #000;
+
+$purple: #3e57c9;
+$purple-blue: #7392EA;
+$gray: #64676b;
+$lighter-gray: #c4c7ca;
+$lightest-gray: #c0c2cc;
+$blue-gray: #96a3ab;
+$brown: #cb9a6c;
+$pink: #edc3c3;
+$emerald: #3fb7b2;
+$vivid-pink: #d36ae6;
+$pearl-blue: #607bed;
+
+$navy: #212444;
+$light-blue: #F5F6FA;
+
+// font color
+$text-color: $light-gray;
+$title-color: #6F83DB;
+$text-gray: #A8A8A8;
+
+$color-black: #333;
+$color-lightestgrey: $lightest-gray;
+$color-lightgrey: $light-gray;
+$color-grey: #888;
+$color-middlegrey: #7e7e7e;
+$color-ticket: #666;
+$color-ticket-cont: #ddd;
+$color-lnb: $color-lightestgrey;
+
+$background-color: $dark-gray; // 전체화면 bg, 메뉴 LNB 전체 bg
+$panel-bg: #1F2341;
+$panel-item-bg: $dark-slate;
+$ticket-back-color: #070a20; // 왼쪽 트리 배경색
+$table-border-color: $border2A;
+$border-color: $purple-gray;
+
+// line color
+$filter-stroke: #424452;
+$ticket-stroke: #2c2e47;
+
+$light-grey: #e5e9eb;
+
+$input-stroke: $purple-gray;
+$input-stroke-active: lighten($input-stroke, 10%);
+$input-placeholder: #727797;
+$selectbox-active-line: $input-stroke-active;
+$accent-stroke: $purple-blue;
+$light-stroke: #f0f0f0;
+
+$scrollbar-thumb-bg: lighten($main-black, 5%);
+// ----
+$text-black: #333;
+$text-dark-gray: #666;
+$text-lighter-gray: #999;
+$text-lightest-gray: #ccc;
+
+$primary: #3E57C9;
+$disable: $gray;
+$general: #3e414e;
+$info: #9e85fa;
+$success: #7ac851;
+$alert: #ffc107;
+$danger: #ff5c67;
+$warn: #F4A462;
+
+$server: #f7cd4e;
+$network: #30fadb;
+$security: #fc59f2;
+$mp-red: #d95252;
+
+
+$background-default: $light-blue;
+
+/// GAP //////////////////////////////////////////////////////
+$gap: 20px;
+$gap-s: 10px;
+$gap-m: 30px;
+
+/// Z-INDEX //////////////////////////////////////////////////
+$modal-z-index: 100;
+$alert-z-index: 90;
+$header-z-index: 2000;
+$modal-background-z-index: 2015;
+$modal-z-index: 2016;
+$dropdown-z-index: 70;
+
+$sidenavi-background: 9;
+$sidenavi: 2013;
+
+/// BORDER-RADIUS//////////////////////////////////////////////
+$radius-m: 10px;
+$radius: 6px;
+$radius-r: 4px;
+$radius-s: 2px;
+
+
+$sidenav-collapsed: 0px;
+$sidenav-expanded: 440px;
+$header-height: 70px;
+$inner: 0 calc(100% - 1000px) 0 50px;
+
+/// MIXINS ////////////////////////////////////////////////////
+
+// 사용자/관리자 변수 통일(test)
+$common-content-text: #E1E1E1;
+$common-border: #2A2D44;
+$common-background: #1F1E32;
+$context: 'admin';
+
+// core 프로젝트 공통 css
+@import './core.scss';

@@ -1,0 +1,424 @@
+@mixin modal-background () {
+  position: fixed;
+  top:0px;
+  left: 0;
+  right:0px;
+  bottom:0px;
+  background-color:rgba(10, 10, 10, 0.8);
+  color:rgba(0, 0, 0, 0.7);
+  text-rendering: optimizelegibility;
+  text-size-adjust: 100%;
+  z-index: $modal-background-z-index;
+}
+
+@mixin cmp-button () {
+  padding: 0 $gap;
+  line-height: 30px;
+  min-width: 64px;
+  width: auto;
+  height: 32px;
+  background-color: $main-gray;
+  border: 1px solid $main-gray;
+  border-radius: $radius-s;
+  cursor: pointer;
+  color: $white;
+  transition: all .2s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+
+  &:focus {
+    outline: none;
+  }
+  &:hover {
+    background-color: darken($main-gray, 5%);
+    outline: none;
+  }
+  // TYPE /////////////////////
+  &[type=is-primary] {
+    color: #fff;
+    background-color: $primary;
+    border-color: $primary;
+    &:hover {background-color: darken($primary, 5%);}
+  }
+
+  &[type=is-anti] {
+    color: inherit;
+    background-color: transparent;
+    border-color: #727797;
+    &:hover { background-color: rgba($color: #000, $alpha: 0.1); }
+  }
+
+  &[type=is-success] {
+    color: $white !important;
+    background-color: $success;
+    border-color: $success;
+    &:hover { background-color: darken($success, 5%); }
+  }
+
+  &[type=is-icon] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    min-width: 32px;
+    color: inherit;
+    background-color: transparent;
+    border-color: transparent;
+    transition: none;
+    &:hover { color: $main-red; }
+  }
+
+
+  &[disabled=disabled] {
+    background-color: $main-gray;
+    border-color: $main-gray;
+    opacity: .5;
+    color:$color-grey;
+    cursor: not-allowed;
+    &:hover {
+      background-color: $main-gray;
+      border-color: $main-gray;
+    }
+  }
+
+  &[size=is-middle] {
+    padding: 0 15px;
+    height: 38px;
+    font-size: 14px;
+    line-height: 36px;
+  }
+  &[size=is-large] {
+    height: 42px;
+    font-size: 16px;
+    line-height: 40px;
+    min-width: 110px
+  }
+
+  &[size=is-mini] {
+    padding: 0 10px;
+    min-width: auto;
+    height: 22px;
+    font-size: 12px;
+    line-height: 21px;
+  }
+
+  // 인스턴스 생성 버튼
+  &.generate-instance {
+    background-color: #DFF2DC;
+    // border: 3px solid red;
+  }
+
+  &.--disabled {
+    position: relative;
+    background-color: #39394B;
+    border-color: #39394B;
+    opacity: 0.5;
+    color: #888;
+    cursor: not-allowed;
+    &:hover {
+      background-color: #39394B;
+    }
+  }
+}
+
+@mixin cmp-status-tag ($color, $backOpacity: 0.1) {
+  background-color: rgba($color, $alpha: $backOpacity);
+  border: 1px solid rgba($color, $alpha: 0.3);
+  color: $color;
+}
+
+@mixin cmp-checkbox() {
+  appearance: none;
+  border: 1px solid $gray;
+  width: 20px; height: 20px;
+  border-radius: $radius-s;
+  position: relative;
+  transition: opacity .5s ease;
+  cursor: pointer;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background-color: #444;
+    opacity: 0;
+  }
+
+  &:indeterminate {
+    background-color: $white;
+    &::before {
+      opacity: 1;
+      background: #444;
+      width: $gap-s;
+      top: 8px;
+      left: 4px;
+      transform: rotate(0deg);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: $disable;
+    transition: .3s ease;
+    border: 1px solid $disable;
+    opacity: .5;
+  }
+
+  &::before {
+    transform: rotate(45deg);
+    top: 9px;left: 3px;
+    width: 6px; height: 2px;
+  }
+  &::after {
+    transform: rotate(-135deg);
+    top: 4px; left: 10px;
+    width: 2px; height: 9px;
+  }
+
+  &:checked {
+    background-color: $white;
+    &::before,
+    &::after {
+      opacity: 1;
+    }
+  }
+}
+
+@mixin elDialog-button () {
+    margin: 0 auto;
+    margin-top: $gap;
+    display: flex;
+    justify-content: center;
+
+    > button {
+      margin: 0 5px;
+      height: 38px;
+      min-width: 80px;
+      font-size: 14px;
+    }
+}
+
+@mixin sourcecreate-button () {
+    margin: 70px auto;
+    display: flex;
+    width: 370px;
+
+    > button {
+      border-radius: $radius;
+      margin: 0 5px;
+      font-size: 18px;
+    }
+    > .-confirm {
+      border-radius: $radius;
+      height: 60px;
+      color: $white;
+      background-color: $input-stroke;
+      width: 200px;
+      &:hover {
+        border-color: $main-blue;
+        background-color: $main-blue;
+        color: #333;
+      }
+    }
+    .-cancel {
+      width: 160px;
+      height: 60px;
+      border: solid 1px $filter-stroke;
+      &:hover {
+        color: $main-blue;
+        border-color: $main-blue;
+        outline: none;
+      }
+    }
+}
+
+@mixin mdi-icon() {
+  display: flex;
+  align-items: stretch;
+  &::before {font-size: 20px;}
+  &[type=is-info] {
+    color: $info;
+  }
+  &[type=is-success] {
+    color: $success;
+  }
+  &[type=is-alert] {
+    color: $alert;
+  }
+  &[type=is-danger] {
+    color: $danger;
+  }
+  &[size=is-small] {
+    &::before {font-size: 15px;}
+  }
+  &[size=is-medium] {
+    width: 16px;
+    height: 16px;
+    &::before {
+      font-size: 23px ; 
+      width: 16px;
+      height: 16px;}
+    }
+  &[size=is-large] {
+    &::before {font-size: 29px;}
+  }
+}
+
+@mixin progressStyle(){
+  -webkit-appearance: none;
+  background: -moz-linear-gradient(to right, $sea-blue, $primary);
+  background: -webkit-linear-gradient(to right, $sea-blue, $primary);
+  background: -o-linear-gradient(to right, $sea-blue, $primary);
+  background: -ms-linear-gradient(to right, $sea-blue, $primary);
+  background: linear-gradient(to right, $sea-blue, $primary);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3E57C9 ', endColorstr='#1977D2', GradientType=1 );
+  max-width: 100%;
+  height: 4px;
+  outline: 0;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+} 
+
+@mixin progressThumbStyle(){ 
+  width: 16px; 
+  height: 16px;
+  box-sizing: border-box;
+  -webkit-border-radius: 50%; 
+  -moz-border-radius: 50%; 
+  -ms-border-radius: 50%; 
+  -o-border-radius: 50%; 
+  border-radius: 50%;
+  background-color: #fff;
+  border: 4px solid $primary;
+}
+
+
+
+@mixin rangeStyle () {
+  $height: 10px;
+
+  margin: auto;
+  appearance: none;
+  position: relative;
+  overflow: hidden;
+  height: $height;
+  cursor: pointer;
+  border-radius: 25px;
+  
+  // chrome
+  &::-webkit-slider-runnable-track {
+      border-radius: 25px;
+      background: #ddd;
+  }
+  &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; /* 1 */
+      height: $height;
+      background: #fff;
+      z-index: 22;
+      box-shadow: -30vw 0 0 29.9vw $primary;
+      @include progressThumbStyle()
+  }
+
+  // firefox
+  &::-moz-range-track {
+      height: $height;
+      background: #ddd;
+  }
+
+  &::-moz-range-thumb {
+      background: #fff;
+      height: $height;
+      width: 20px;
+      border: 3px solid $border-color;
+      border-radius: 0 !important;
+      box-shadow: -100vw 0 0 99.9vw $primary;
+      box-sizing: border-box;
+      @include progressThumbStyle();
+  }
+
+  // ie
+  &::-ms-fill-lower {
+      @include progressThumbStyle()
+  }
+
+  &::-ms-thumb {
+      background: #fff;
+      border: 2px solid #999;
+      height: $height;
+      width: 20px;
+      box-sizing: border-box;
+      @include progressThumbStyle()
+  }
+
+  &::-ms-ticks-after {
+      display: none;
+  }
+
+  &::-ms-ticks-before {
+      display: none;
+  }
+
+  &::-ms-track {
+      background: #ddd;
+      color: transparent;
+      height: 40px;
+      border: none;
+  }
+
+  &::-ms-tooltip {
+      display: none;
+  }
+}
+
+@mixin gradientBackground {
+  background: rgb(200,167,68);
+  background: linear-gradient(90deg, rgba(200,167,68,1) 0%, rgba(68,200,180,1) 50%, rgba(200,68,192,1) 100%);
+}
+
+
+// [처리 상태] opacity 통일
+@mixin statusOpacity ($fontColor) {
+  color: $fontColor;
+  background-color: rgba($fontColor, .2);
+}
+
+// APP 업무 담당자, APP 운영팀, 서버 담당자 등 custom popup 스타일
+@mixin customPopup ($width: 400px, $height: 510px) {
+  &:before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    z-index: 3;
+    background-color: rgba(0,0,0,.5);
+  }
+  .-body {
+    flex: 2 1 auto;
+    position: fixed;
+    box-sizing: border-box;
+    // top: 15vh;
+    top: calc(50vh - #{$height / 2});
+    left: calc(50% - #{$width / 2});
+    padding: $gap-m;
+    width: $width;
+    height: $height;
+    border: 1px solid $dark-slate;
+    background: $background-color;
+    border-radius: $radius;
+    z-index: 1003;
+  }
+}
+
+// @mixin tooltipBasicColor {
+//   background-color: #ff9e2b;
+//   border-radius: 8px;
+//   color: #424452;
+//   box-sizing: border-box;
+//   .popper__arrow {
+//     // border-color: #ff9e2b !important;
+//     &:after {
+//       // border-color: #ff9e2b !important;
+//     }
+//   }
+// }

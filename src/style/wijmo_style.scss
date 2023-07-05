@@ -1,0 +1,597 @@
+// @import '~@grapecity/styles/wijmo.css';
+@import "~@grapecity/wijmo.styles/wijmo-core";
+
+// enterprise modules
+@import "~@grapecity/wijmo.styles/parts/grid_sheet";
+@import "~@grapecity/wijmo.styles/parts/grid_multirow";
+@import "~@grapecity/wijmo.styles/parts/chart_finance";
+// wijmo grid/chart 용 스타일
+
+.wj-content {
+  overflow: visible;
+  border: none;
+  background-color: transparent;
+  border-radius: 0;
+  > div {
+    overflow: auto;
+    div[wj-part=root] {
+      // min-width: 1024px !important;
+      overflow-y: visible;
+      overflow-x: auto;
+      // overflow-x: hidden; // infinite-scroll 사용시 이걸로 바꿔주세요!
+      // overflow: visible !important;
+    }
+  }
+}
+  
+
+$tableheader_font-size: 13px;
+
+.wj-header {
+  background-color: transparent;
+  &.wj-cell {
+    padding: 0 4px;
+    height: 90px;
+    font-weight: 500;
+    line-height: 42px;
+    text-align: center;
+    background-color: $border2A;
+    color: $white;
+    .wj-btn.wj-elem-filter {
+      position: absolute;
+      top: 50%;
+      right: 5px;
+      margin-top: -8px;
+      &[aria-pressed=false] {
+        opacity: .3;
+      }
+    }
+  }
+}
+.wj-flexgrid {
+  .wj-colheaders {
+    .wj-header {
+      &.wj-state-multi-selected {
+        border-bottom: none;
+        background: $border2A;
+        font-weight: 500;
+        color: $white;
+      }
+    }
+  }
+}
+
+
+.wj-cells {
+  // cell
+  .wj-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    border-right: none;
+    padding: 4px 20px 3px 20px;
+    // width: 100%; // ❌ 관리자에만 있음 (너비 더블클릭 후 자동 너비 설정시 좌우측 과하게 넘어가는 버그가 있음 - 인프라 팀에서 사용시 불편함 호소)
+    border-bottom: 1px solid $border2A;
+    font-size: 13px;
+    color: $text-color;
+    font-weight: 400;
+    background-color: transparent;
+    &.wj-align-justify {
+      justify-content: center;
+      text-align: center;
+    }
+    &.wj-align-left {
+      justify-content: flex-start;
+      text-align: left;
+    }
+    &.wj-align-right {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    &.is-disable-row {
+      color: $color-ticket;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(57, 57, 75, 0.7);
+        z-index: 4;
+      }
+    }
+
+    .cell-flex-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &.-wrap {
+        flex-wrap: wrap;
+      }
+      &.-left {
+        align-items: flex-start;
+      }
+      &.-right {
+        align-items: flex-end;
+      }
+    }
+    // overflow: inherit;
+
+    > div {
+      // text-align: center;
+      width: 100%;
+    }
+
+    &.wj-alt {
+      background-color: $background-color;
+    }
+    
+    &.selected-row {
+      background-color: rgba(63, 85, 187, 0.3);
+      color: $white;
+      // color: $color-black;
+      cursor: auto;
+      // .view-box-cnt {
+      //   .view-box {
+      //     > .box-icon {
+      //       -webkit-filter: invert(0%);
+      //       filter: invert(0%);
+      //     }
+      //   }
+      // }
+      // .file-down-component {
+      //   > .file-down-wrap {
+      //     .file-name {color: $color-black;}
+      //   }
+      // }
+      &:not(.is-disable-row):hover {
+        background: $white !important;
+        color: $color-black !important;
+        .view-box-cnt {
+          .view-box {
+            > .box-icon {
+              -webkit-filter: invert(0%);
+              filter: invert(0%);
+            }
+          }
+        }
+        .file-down-component {
+          > .file-down-wrap {
+            .file-name {color: $color-black;}
+          }
+        }
+      }
+      // > * {
+      //   color: $color-black !important;
+      // }
+       
+    }
+
+    .foldable-item {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      > a { height: 25px; }
+
+      > .custom-template {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1 1 auto;
+      }
+    }
+
+    // 개별 선택 / row 선택
+    &.wj-state-selected,
+    &.wj-state-multi-selected {
+      background: $white;
+      color: $color-black;
+      .view-box-cnt {
+        .view-box {
+          > .box-icon {
+            -webkit-filter: invert(0%);
+            filter: invert(0%);
+          }
+        }
+      }
+    }
+
+    &.checkbox-cell {
+      padding: 0;
+    }
+  }
+
+  // hover 컬러
+  .wj-row:hover .wj-cell:not(.is-disable-row){
+    transition: all .3s;
+    // background: lighten($background-color, 2%);
+    background: $white;
+    color: $color-black;
+    &.selected-row {
+      background: $white !important;
+      color: $color-black !important;
+    }
+    &.wj-state-multi-selected {
+      background: $white;
+    }
+    &.wj-state-active {
+      background-color: $white;
+    }
+  }
+}
+
+// routing 가능할 경우
+.clickable {
+  .wj-row:hover .wj-cell:not(.wj-header):not(.is-disable-row) {
+    cursor: pointer;
+  }
+}
+
+// sorting 버튼
+.wj-glyph-up {
+  margin-left: 5px;
+  top: -2px;
+  border-bottom: 6px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+.wj-glyph-down {
+  margin-left: 5px;
+  top: -2px;
+  border-top: 6px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+.wj-grid-editor {
+  &.wj-form-control {
+    border: 1px solid #dfdfdf;
+    height: 20px;
+    padding-left: 10px;
+  }
+}
+
+
+// 검색기능
+.wj-flexgridsearch {
+  border-bottom: 1px solid $input-stroke;
+  border-radius: $radius-s;
+  display: block;
+  height: 30px;
+  padding: 0 15px;
+  line-height: 30px;
+  width: 100%;
+  color: $white;
+  font-family: 'Roboto';
+  
+  .wj-input-group {
+    .wj-form-control {
+      padding: 0;
+      &::placeholder {
+        color: $input-placeholder;
+      }
+    }
+    .wj-btn.wj-btn-default {
+      border: none !important;
+      color: transparent;
+      &:hover {
+        color: $white;
+        background: none;
+      }
+    }
+  }
+}
+// 검색어와 일치하는 요소
+.wj-flexgrid {
+  .wj-cell {
+    span.wj-state-match {
+      background-color: transparent;
+      color: $light-gray;
+      font-weight: normal;
+    }
+  }
+}
+
+.v-center {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-border {
+  // border :1px solid $background-color;
+  // border-bottom: none;
+  border-right: 1px solid $dark-gray;
+  border-bottom: 1px solid $dark-gray;
+  &.grid-border {
+    border : none;
+    border-bottom : 1px solid rgba($color: $white, $alpha: 0.1);
+
+    &.dashed-border {
+      border-bottom: 1px dashed rgba($color: $white, $alpha: 0.2);
+    }
+  }
+}
+
+// 로우 클릭시, 페이지 넘어갈 때 마우스 오버 스타일
+.route-detail-grid {
+  .wj-cells {
+    .wj-row:hover .wj-cell{
+      background: $white;
+      color: $color-black;
+      transition: all .5s;
+    }
+  }
+}
+
+// overflow: visible 그리드 (셀 영역 넘는 컨텐츠 있을 때)
+.overflow-visible-grid {
+  overflow: visible;
+
+  > .wj-flexgrid.wj-content {
+    overflow: visible !important;
+    > div {
+      overflow: visible !important;
+      .wj-cell {
+        overflow: visible !important;
+      }
+
+      // 얘때문에 infinite-scroll 불가능합니다..!! 주석처리..
+      div[wj-part=root] {
+        overflow-x: visible !important;
+        overflow: visible !important;
+      }
+    }
+  }
+}
+
+
+
+// 위즈모 컬럼 필터링 패널
+.wj-dropdown-panel.wj-content.wj-control {
+  background: $ticket-back-color;
+  // Filter by Value
+  .wj-control {
+    background-color: $ticket-back-color;
+    color: $text-lightest-gray;
+    .wj-listbox {overflow: auto; max-height: 300px;}
+  }
+  .wj-filtertype { color: $light-gray;}
+  .wj-input-group { // 검색어 인풋 영역
+    input.wj-form-control {
+      padding: 0 $gap-s;
+      height: 32px;
+      line-height: 32px;
+      border-radius: $radius-s;
+      border: 1px solid $input-stroke !important;
+      &::placeholder {
+        color: $input-placeholder;
+        line-height: $gap;
+      }
+      &:focus {
+        color: $color-black;
+        background-color: $white;
+        border-color: $input-stroke-active;
+      }
+    }
+    > .wj-input-group-btn {
+      padding: 0;
+      > button {
+        margin-left: 5px;
+        width: 20px;
+        border-left: 1px solid $main-gray !important;
+        > .wj-glyph-down { margin-left: 0; }
+      }
+    }
+  }
+  .wj-listbox-item {
+    font-size: 13px;
+    background-color: $ticket-back-color;
+    color: $white;
+    // &.wj-state-selected { background-color: $white; color: $color-black; }
+    &.wj-state-selected { background-color: lighten($ticket-back-color, 5%); }
+    &:nth-child(2) { // Select All 부분
+      span[wj-part=sp-select-all] { font-size: 14px; margin-left: 5px; }
+    }
+    > label { 
+      display: flex;
+      align-items: center;
+      input[type=checkbox] {
+        @include cmp-checkbox()
+      }
+    }
+  }
+
+  .wj-valuefilter-editor { // 필터 항목 선택 부분
+  }
+
+  .wj-btn {
+    padding: 0 14px;
+    height: 32px;
+    min-width: 54px;
+    font-size: 13px;
+    line-height: 32px;
+    color: $white;
+    &[wj-part=btn-apply] {
+      background-color: $primary;
+      border-color: $primary; 
+      &:hover {background-color: darken($primary, 5%);}
+    }
+    &[wj-part=btn-clear], &[wj-part=btn-asc], &[wj-part=btn-dsc] {
+      background-color: $main-gray;
+      border-color: $main-gray;
+      &:hover {background-color: darken($main-gray, 5%);}
+    }
+    &[wj-part=btn-cancel], &.wj-btn-default {
+      background-color: transparent;
+      border: 1px solid $gray;
+      &:hover { background-color: rgba($color: #000, $alpha: 0.1); }
+    }
+  }
+
+  // Filter by Condition
+  .wj-template {
+    overflow: hidden;
+  }
+
+  div[role=radiogroup] { // And / Or 라디오
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: $gap-s;
+    > label {
+      display: flex;
+      align-items: center;
+      input[type=radio] {
+        margin-right: 5px;
+        border: 1px solid $gray;
+        width: 20px; height: 20px;
+        &:checked {
+          appearance: none;
+          position: relative;
+          border-radius: 50%;
+          background:  #f0f0f0;
+          border: 1px solid #f0f0f0;
+          &:after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: $main-black;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+// 챠트 ////////////////////////////////////////////////
+.wj-flexchart {
+  padding: 0;
+  margin-bottom: 0;
+  border: none;
+  //마커 
+  .wj-chart-linemarker .wj-chart-linemarker-vline {
+    height: 1px;
+    width: 2px;
+    opacity: .8;
+    background: $main-red;
+  }
+
+  .wj-tick {
+    display :none;
+  }
+
+  // 타이틀 및 가이드라인 색
+  .wj-header .wj-title,
+  .wj-footer .wj-title{
+    fill: $white;
+    font-size: 110%;
+    text-align: center;
+  }
+  .wj-label, .wj-data-label {
+    fill: $input-placeholder;
+    letter-spacing: -0.31px;
+    font-size: 13px;
+  }
+
+  .wj-axis-x .wj-title,
+  .wj-axis-y .wj-title {
+    fill: $input-placeholder;
+    font-style: normal;
+  }
+  .wj-axis-x .wj-line {
+    stroke: $filter-stroke;
+  }
+
+  // bar 차트 그리드 라인
+  .wj-gridline {
+    stroke: $input-placeholder;
+  }
+
+  // 차트 선택 스트로크 스타일
+  .wj-state-selected {
+    stroke: $white;
+    stroke-width: 1;
+    stroke-dasharray: 2;
+  }
+}
+
+
+// tooltip
+.adm-chart-tooltip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  // span, b {}
+  > span { display: block; }
+  .-name { // span
+    font-size: 13px;
+    line-height: 20px;
+    margin-left: $gap-s;
+  }
+  .-value { // b
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 500;
+  }
+  &.-divided {
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+      
+    strong {
+      display: block;
+      line-height: 20px;
+    }
+    p {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      .-value { // b
+        font-size: 16px;
+        line-height: 20px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.wj-tooltip {
+  background-color: $white;
+  color: $text-black;
+  font-weight: normal;
+  box-shadow: 2.5px 4.3px 5px 0 rgba(102, 102, 102, 0.2);
+  position: relative;
+  border: 1px solid $color-ticket-cont;
+  padding: $gap-s;
+  border-radius: 8px;
+  line-height: 20px;
+  z-index: 2050 !important;
+
+  &.more-contents {
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  &::before {
+    box-sizing: border-box;
+    content: '';
+    position: absolute;
+    border: 1px solid $color-ticket-cont;
+    border-top: 5px solid transparent;
+    border-left: 5px solid transparent;
+    width: 10px; height: 10px;
+    background-color: $white;
+    transform: rotate(45deg);
+    bottom: -5px; left: calc(50% - 5px);
+    z-index: -1;
+  }
+}

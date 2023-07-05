@@ -1,0 +1,19 @@
+
+export const ReviewStates = Object.freeze({
+  REVIEW: 'REVIEW',
+  CANCELED_AT_REVIEW: 'CANCELED_AT_REVIEW',
+  APPROVAL1: 'APPROVAL1',
+  APPROVAL1_REJECTED: 'APPROVAL1_REJECTED'
+})
+
+export const TodoStates = Object.freeze({
+  TODO: 'TODO',
+  CANCELED_AT_TODO: 'CANCELED_AT_TODO',
+  TODO_FINISHED: 'TODO_FINISHED',
+  APPROVAL2: 'APPROVAL2',
+  APPROVAL2_REJECTED: 'APPROVAL2_REJECTED'
+})
+
+export const DoneStates = Object.freeze({
+  DONE: 'DONE'
+})

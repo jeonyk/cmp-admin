@@ -1,0 +1,291 @@
+.set-workflow {
+  > .set-workflow-content {
+  display: flex;
+  align-items: flex-start;
+    .db-arrow-icon {
+      display: inline-block;
+      margin: 0 $gap-m;
+      width: 27px;
+      height: 750px;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-image: url('../../../assets/images/icon-dbarrow-left@3x.png');
+    }
+    .add-area {
+      display: flex;
+      justify-content: center;
+      margin: $gap 0;
+      > .mdi {
+        -webkit-filter: invert(50%);
+        filter: invert(50%);
+        &:hover {color: $main-red;}
+      }
+    }
+  }
+
+  .set-workflow-area {
+    &.-role {
+      button.-arrow-button {
+        margin: 0;
+        border: 0;
+        .arrow-icon {
+          display: inline-block;
+          width: 10px;
+          height: 20px;
+          background-position: center;
+          background-size: contain;
+          background-repeat: no-repeat;
+          &.-prev {background-image: url('../../../assets/images/icon-arrow-prev-wh.svg');}
+          &.-next {background-image: url('../../../assets/images/icon-arrow-next-wh.svg');}
+        }
+        &.-disable {
+          background-color: transparent;
+          border: none;
+          -webkit-filter: invert(50%);
+          filter: invert(50%);
+        }
+      }
+
+      .role-flow-process {
+        overflow-x: auto;
+        overflow-y: none;
+        position: relative;
+        width: 973px;
+        height: 740px;
+        scroll-behavior: smooth;
+        &::-webkit-scrollbar { width: 2px; background-color: $dark-slate; }
+
+        /* Track, Handle, Hover */
+        &::-webkit-scrollbar-track {
+          width: 2px;
+          background-color: $dark-slate;
+        }
+        &::-webkit-scrollbar-thumb,
+        &::-webkit-scrollbar-thumb:hover {
+          width: 8px;
+          background: $gray;
+          border-radius: $radius-r;
+        }
+        > div {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          display: flex;
+          align-items: stretch;
+          transition: all .3s;
+
+          // 역할 하나하나
+          .role-sections {
+            flex: 1 1 auto;
+            position: relative;
+            padding-right: $gap-m;
+            width: 270px;
+            &:last-of-type {padding-right: $gap-m;}
+            &:not(:last-of-type)::before {
+              content: '';
+              position: absolute;
+              top: 50%;
+              right: 0;
+              width: 30px;
+              height: 1px;
+              background-color: $gray;
+            }
+            &:not(:last-of-type)::after { // 중간중간 화살표
+              content: '';
+              position: absolute;
+              top: 50%;
+              right: 0;
+              margin-top: -5px;
+              width: 0;
+              height: 0;
+              border-top: 5px solid transparent;
+              border-bottom: 5px solid transparent;
+              border-right: 5px solid $gray;
+            }
+            & + .add-area {
+              position: relative;
+              padding-right: $gap-s;
+              > .mdi {
+                position: absolute;
+                bottom: 5px;
+                right: 0px;
+              }
+            }
+            > .workflow-fold-panel.role-fold-panel {
+              position: relative;
+              padding: $gap 0;
+              border-radius: 0 $radius $radius $radius;
+              margin-top: 15px;
+              height: 650px;
+              background: $ticket-back-color;
+              box-shadow: 0px -8px $purple-gray;
+              &::before {
+                content:'';
+                position: absolute;
+                top: -15px;
+                left: 0;
+                border-radius: $radius 0 0 0;
+                width: 50px;
+                height: 15px;
+                background-color: inherit;
+              }
+              &::after {
+                content:'';
+                position: absolute;
+                top: -15px;
+                left: 50px;
+                border-radius: $radius;
+                width: 50px;
+                height: 30px;
+                background-color: inherit;
+                transform: skewX(45deg);
+              }
+              > .fold-header {
+                padding: 0 $gap;
+                background-color: transparent;
+                .header-title {
+                  color: $color-lightgrey;
+                }
+              }
+              > .fold-body {
+                overflow-y: auto;
+                max-height: 620px;
+                margin-top: 15px;
+                padding: 0 $gap;
+                border-color: transparent;
+                background-color: transparent;
+                  /* width */
+                &::-webkit-scrollbar { width: 6px; background-color: $background-color; }
+
+                /* Track, Handle, Hover */
+                &::-webkit-scrollbar-track { background-color: $dark-slate; }
+                &::-webkit-scrollbar-thumb,
+                &::-webkit-scrollbar-thumb:hover {
+                  background: $gray;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    &.-other{
+      max-width: 250px;
+      min-width: 250px;
+      .role-set-item {
+        min-width: 250px;
+        & + .role-set-item {
+          margin-top: $gap-s;
+        }
+      }
+    }
+
+    & + .set-workflow-area {margin-left: $gap * 2;}
+
+    .area-title {
+      padding: $gap $gap-m;
+      font-weight: bold;
+      font-size: 16px;
+      color: $white;
+      border-bottom: 1px solid $filter-stroke;
+      // background-color: $navy;
+    }
+    .role-set-list {
+      // padding: $gap;
+      // border: 1px solid $main-gray;
+      // background-color: $navy;
+      .work-drop-body {
+        .body-title {
+          margin-bottom: $gap-s;
+          font-weight: 500;
+
+        }
+        .role-detail-item {
+          .workflow-fold-panel.detail-fold-panel {
+            border-radius: $radius-s;
+            > .fold-header {
+              padding: $gap-s;
+              font-size: 13px;
+              background-color: $dark-slate;
+              color: $color-lightgrey;
+              &.-active {
+                background-color: $white;
+                .header-title {
+                  color: $color-black;
+                }
+              }
+            }
+          }
+          & + .role-detail-item{
+            margin-top: 5px;
+          }
+        }
+        & + .work-drop-body {margin-top: $gap;}
+      }
+
+      .empty-zone {
+        padding: 47px 0;
+        text-align: center;
+        color: $color-middlegrey;
+        font-size: 12px;
+        border: 1px dotted $gray;
+        border-radius: $radius-s;
+        background-color: transparent;
+        &.-drag-over {
+          background-color: rgba($color: $purple-blue, $alpha: .2);
+          border-color: $purple-blue;
+        }
+      }
+    }
+  }
+
+  .workflow-fold-panel.checklist-fold-panel {
+    > .fold-body {
+      position: relative;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: $gap;
+        left: $gap;
+        height: 1px;
+        background-color:#d9d9d9;
+      }
+    }
+  }
+  .expand-button {
+    font-size: 12px;
+    color: $color-lightgrey;
+  }
+  .ghost {
+    display: none;
+  }
+
+  // 그 외 태그 스타일
+  .role-index-tag {
+    display: inline-block;
+    margin-left: $gap-s;
+    width: 16px;
+    line-height: 16px;
+    font-size: 13px;
+    color: $white;
+    text-align: center;
+    border-radius: $radius-s;
+    background-color: $main-red;
+  }
+  .role-readable-tag {
+    display: inline-block;
+    margin-left: $gap-s;
+    min-width: 32px;
+    height: 16px;
+    color: $main-blue;
+    text-align: center;
+    font-size: 12px;
+    line-height: 16px;
+    text-transform: uppercase;
+    border: 1px solid $main-blue;
+    border-radius: 9px;
+  }
+}

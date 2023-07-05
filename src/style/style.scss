@@ -1,0 +1,299 @@
+@import './fonts.scss';
+@import './normalize.css';
+
+@import './mixins.scss';
+
+body {
+  overflow: auto;
+  max-width: 100vw;
+  min-height: 100vh;
+}
+
+html, body {
+  @import './element-ui-override.scss';
+  @import './element-ui-override_light.scss';
+  @import './wijmo_style.scss';
+  @import './common.scss';
+  // position: relative;
+  // overflow-x: auto;
+  // overflow-x: hidden;
+  // overflow: auto;
+  max-width: 100vw;
+  min-height: 100vh;
+  font-family: 'Roboto', 'Noto Sans Korean', Arial, Helvetica, sans-serif;
+  // font-family: 'Noto Sans Korean';
+  font-size: 13px;
+  font-weight: 500;
+
+  color: $text-color; //#e1e1e1
+  background-color: $background-color;
+
+  *::-webkit-scrollbar {
+    width: 6px; height: 6px;
+    background-color: #1F1E32;
+  }
+
+  *::-webkit-scrollbar-track {
+    background-color: #1F1E32;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #727797;
+  }
+
+  *::-webkit-scrollbar-corner {
+     background-color: #1F1E32;
+  }
+  *::-webkit-resizer {
+    display: none;
+  }
+}
+
+// scroll 스타일이 작아야 할 때 사용합니다.
+.tiny-scroll {
+  &::-webkit-scrollbar {
+    width: 16px;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+      background: $text-lighter-gray;
+      border: 7px solid transparent;
+      // border-radius: 50px;
+      background-clip: padding-box;
+  }
+}
+
+// modal 내부의 스크롤이 생겨야 할 때 입력합니다.
+.modal-inner-scroll {
+  &::-webkit-scrollbar {
+    width: 16px;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+      background: $gray;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      // border-radius: 50px;
+      background-clip: padding-box;
+  }
+}
+
+* {
+  margin: 0;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  padding-inline-start: 0;
+  list-style-type: none;
+  // box-sizing: border-box;
+}
+
+a { cursor: pointer; }
+
+ul, dd, p {
+  padding: 0;
+  margin: 0;
+}
+
+table, th, td, tr {
+  border-collapse: collapse;
+}
+
+section {
+  font-weight: normal;
+}
+
+button {
+  &:focus {
+    outline: none;
+  }
+}
+
+// 스크린리더기에선 읽지만 화면에 보이지 않게합니다.
+.skip-article-header {
+  width: 0; height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  display: none;
+  text-indent: -9999;
+  position: absolute;
+  top: -9999px; left: -9999px;
+}
+
+.cmp-clickable-button {
+  &:hover {
+    & * {
+      fill: white;
+      color: white;
+    }
+  }
+}
+
+// 아이콘
+.-delete-icon { // 삭제
+  display: inline-block;
+  width: 12px;
+  height: 16px;
+  background: url('../assets/images/icon-trashcan@3x.png') no-repeat;
+  background-size: contain;
+  &:hover {
+    background: url('../assets/images/icon-red-trashcan@3x.png') no-repeat;
+    background-size: contain;
+  }
+}
+.-copy-icon { // 수정
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: url('../assets/images/icon-copy.svg') no-repeat;
+  background-size: contain;
+  &:hover {
+    background: url('../assets/images/icon-copy.svg') no-repeat;
+    background-size: contain;
+  }
+}
+
+.button {
+  @include cmp-button();
+}
+
+
+// el-dialog 하단 (취소/삭제) button
+.big-button-area {
+  @include elDialog-button;
+}
+
+// 큰 사각형 버튼(자원바구니/마켓플레이스용?)
+.-sourcecreate-button {
+  @include sourcecreate-button();
+}
+
+.mdi {
+  @include mdi-icon();
+}
+
+
+// [처리상태] opacity 통일 - 중복스타일이 있으므로 class로 뺍니다!
+.is-loading { @include statusOpacity($yellow)}
+.is-wait { @include statusOpacity($yellow) }
+.is-info { @include statusOpacity($purple) }
+.is-ing { @include statusOpacity($success) }
+.is-complete { @include statusOpacity($success) }
+.is-approved { @include statusOpacity($success) }
+.is-removed { @include statusOpacity($main-red) }
+.is-fail { @include statusOpacity($main-red) }
+.is-delay { @include statusOpacity($danger) }
+.is-reject { @include statusOpacity($danger) }
+.is-changed { @include statusOpacity($deepGreen) }
+.is-confirm { @include statusOpacity($violet) }
+.is-new { @include statusOpacity($violet) }
+.is-undefined {  @include statusOpacity($input-placeholder) }
+.is-primary {  @include statusOpacity($purple) }
+  // AWS 추가 ===
+.is-pending {  @include statusOpacity(#727797) }
+.is-error {  @include statusOpacity(#fa5657) }
+.is-using {  @include statusOpacity(#1977d2) }
+.is-stop {  @include statusOpacity(#cacaca) }
+.is-available {  @include statusOpacity(#cacaca) }
+
+/* table 더보기 버튼*/
+.more-table-data {
+  @include moreTableData();
+}
+
+/* Rules for sizing the icon. */
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+
+/* Rules for using icons as black on a light background. */
+.material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
+.material-icons.md-dark.md-inactive { color: rgba(0, 0, 0, 0.26); }
+
+/* Rules for using icons as white on a dark background. */
+.material-icons.md-light { color: rgba(255, 255, 255, 1); }
+.material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
+
+.-edit-icon { // 수정
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  -webkit-mask-image: url('../components/Icons/preview/PencilIcon.svg');
+  mask-image: url('../components/Icons/preview/PencilIcon.svg');
+  background-color: #9596A0;
+  background-size: contain;
+  mask-repeat: no-repeat;
+  cursor: pointer;
+  &:hover {
+    background-color: $main-red;
+    background-size: contain;
+  }
+}
+
+// el-date-picker type: datetimerange 패널
+.date-popper-log-check {
+  .el-picker-panel__body {
+    background-color: $white;
+
+    .el-date-table td.today.end-date span {
+      color: $white !important;
+    }
+  }
+
+  .el-picker-panel__footer {
+    width: calc(513px - 8px);
+  }
+
+  .el-date-range-picker__editor {
+    .el-input__inner {
+      &:disabled {
+        border: none;
+        background-color: $disable;
+        color: $lightest-gray;
+      }
+    }
+  }
+}
+
+input::-ms-reveal {
+  display: none;
+}
+
+input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}
+
+.shade-popper {
+  border-color: $white !important;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  font-weight: normal;
+  line-height: 1.5;
+  padding: 15px;
+
+  &[x-placement^=bottom] .popper__arrow::after,
+  &[x-placement^=bottom] .popper__arrow {
+    border-bottom-color: $white !important;
+  }
+
+  &[x-placement^=top] .popper__arrow::after,
+  &[x-placement^=top] .popper__arrow {
+    border-top-color: $white !important;
+  }
+
+  &[x-placement^=left] .popper__arrow::after,
+  &[x-placement^=left] .popper__arrow {
+    border-left-color: $white !important;
+  }
+
+  &[x-placement^=right] .popper__arrow::after,
+  &[x-placement^=right] .popper__arrow {
+    border-right-color: $white !important;
+  }
+}

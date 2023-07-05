@@ -1,0 +1,1475 @@
+// body {
+  /*
+    1) breadcrumbs
+    2) datepicker
+    2-1) timepicker
+    3) alert / confirm 창
+    4) el-dialog 모달창
+    5) input (input 박스)
+    6) textarea
+    7) select (select 박스)
+    7-1) select 박스 드롭다운 영역
+    8) 드롭다운 dropdown :: el-dropdown
+    9) checkbox
+    10) slider (input range)
+    11) radio (square)
+    12) radio (normal)
+    13) upload (파일 업로드)
+    14) el-switch (스위치)
+    15) el-pagination (페이징)
+    16) el-popper (el-ui 미니 팝업창 위치 조절) 😡 - 만지면 모든 미니팝업 위치가 달라집니다(위험)
+    17) el-input--small (small 사이즈)
+    18) el-tag (태그)
+    19) el-input-number (input 넘버)
+    20) el-tooltip (툴팁)
+    21) el-loading (로딩)
+    22) el-popover (팝오버)
+    23) el-step (스텝)
+    24) el-tab (탭)
+    25) el-badge (배지)
+    26) el-input (패스워드 눈모양)
+  */
+
+
+  // 1) breadcrumbs
+  .el-breadcrumb {
+    display: flex;
+    justify-content: center;
+    > .el-breadcrumb__item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &.-current {
+        > .el-breadcrumb__inner {
+          display: flex;
+          align-items: center;
+          color: $white;
+          font-weight: bold;
+          cursor: initial;
+          &.is-link:hover {
+            color: inherit;
+            font-weight: 600;
+          }
+        }
+      }
+
+      > .el-breadcrumb__inner {
+        display: flex;
+        align-items: center;
+        font-size: 20px;
+        color: $slate;
+        font-weight: 300;
+        letter-spacing: -0.6px;
+        line-height: 22px;
+        &.is-link:hover {
+          cursor: pointer;
+          color: $primary;
+        }
+      }
+      > .el-breadcrumb__separator {
+        margin: 0 5px;
+        color: $slate;
+        &:before {
+          font-size: 20px;
+        }
+      }
+    }
+    > .el-breadcrumb__item:nth-of-type(2) {
+      > .el-breadcrumb__inner {
+        text-transform: capitalize;
+      }
+    }
+  }
+
+
+  // 2) datepicker
+  div.el-picker-panel {
+    box-shadow: none;
+    margin-left: -21px;
+    border: 1px solid #d9d9d9;
+    border-radius: 0 $radius-s $radius-s 0;
+    width: 328px;
+
+    &.el-popper[x-placement^=bottom],
+    &.el-popper[x-placement^=top]{
+      &::before {
+        width: 100%;
+        left: 0;
+      }
+    }
+
+    .el-picker-panel__body {
+      .el-date-table {
+        td.available:hover {
+          color: $primary;
+        }
+        td.today {
+          span {
+            color: $primary;
+          }
+        }
+        td.current:not(.disabled) {
+          span {
+            background-color: $primary;
+            line-height: 25px;
+            color: $white;
+          }
+        }
+      }
+    }
+    .el-date-picker__header-label:hover {
+      color: $text-black;
+      font-weight: bold;
+    }
+
+    .el-picker-panel__icon-btn:hover {
+      color: $primary;
+    }
+    .el-year-table {
+      td {
+        &.available.current.today {
+          > .cell { color: inherit; }
+        }
+        .cell:hover {
+          color: $primary;
+        }
+      }
+    }
+    .el-month-table {
+      td {
+        &.disabled {
+          .cell:hover {
+            color: #c0c4cc;
+            text-decoration: none;
+          }
+          &.today {
+            .cell {color: #c0c4cc;}
+          }
+        }
+        &.today {
+          .cell {color: inherit;}
+        }
+        &.current {
+          .cell {
+            color: $primary;
+            &:hover {
+              color: $primary;
+            }
+          }
+        }
+        .cell:hover {
+          color: $primary;
+        }
+      }
+    }
+
+    &.el-popper[x-placement^=bottom] {
+      margin-top: 10px !important;
+    }
+  }
+
+  .el-date-editor {
+    .el-input__inner {
+      padding: 0 10px 0 30px !important;
+      border: 0;
+    }
+    
+    .el-input__prefix {
+      display: block;
+      line-height: 16px;
+      > .el-input__icon {
+        height: 32px;
+         &.el-icon-date {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          &::before {
+            content: '';
+            display: block;
+            width: 15px; height: 15px;
+            background: url('../assets/images/calendar_ico@3x.png') no-repeat;
+            background-size: contain;
+          }
+        }
+      }
+    }
+
+    background-color: transparent;
+    border: none;
+
+
+
+    &.date-time-picker {
+      > .el-input__inner {
+        padding: 0 10px 0 30px;
+      }
+    }
+  }
+
+  //2-1) timepicker (타임피커)
+  .el-time-panel {
+    .el-time-panel__footer {
+      >.el-time-panel__btn.confirm {
+        color: $primary;
+      }
+    }
+  }
+
+  // 3) alert / confirm 창
+  div.el-message-box {
+    padding: 30px;
+    background-color: $background-color;
+    border-radius: 5px;
+    border: none;
+    min-width: 330px;
+    width: auto;
+    max-width: 90vw;
+    min-height: 170px;
+    box-sizing: border-box;
+    position: relative;
+    // z-index: 3000 !important;
+
+    .el-message-box__header {
+      // padding-bottom: $gap;
+      padding: 0;
+      .el-message-box__title {
+        color: $white;
+        display: none; // header 없앴음..
+        // font-size: 20px;
+        font-size: 0;
+        font-weight: bold;
+      }
+    }
+    .el-message-box__headerbtn {
+      top: -15px; right: -15px;
+    }
+    .el-message-box__close.el-icon-close {
+      width: 15px; height: 15px;
+      &:before {
+        font-size: 15px;
+        font-weight: bold;
+        color: $white;
+      }
+    }
+    .el-message-box__content {
+      // padding: $gap-m 0;
+      padding: 0;
+      margin-top: 16px;
+      min-height: 55px;
+      text-align: center;
+      font-weight: normal;
+      line-height: 1.38;
+      color: $white;
+      .el-message-box__message {
+        > * {
+          font-size: 14px;
+          // line-height: 22px;
+        }
+      }
+      .el-message-box__status {
+        top: 0;
+        left: 50px;
+        transform: translateX(-75%);
+      }
+    }
+    .el-message-box__btns {
+      padding: 0;
+      // position: absolute;
+      // bottom: $gap-m;
+      // width: 280px;
+      display: flex;
+      justify-content: center;
+      margin-top: $gap;
+
+      .el-button {
+        border: none;
+        padding: 0;
+        min-width: 80px;
+        border-radius: $radius-s;
+        line-height: 38px;
+        font-size: 14px;
+        color: $white;
+        background-color: transparent;
+      }
+      .el-button--default {
+        border: 1px solid $gray;
+      }
+      .el-button--primary {
+        color: #fff;
+        background-color: $primary;
+        border: none;
+        &:hover {
+          background-color: $primary;
+        }
+      }
+    }
+  }
+
+  .el-message-box__wrapper { // 팝업 뒤 background
+    background-color: rgba(0, 0, 0, .7);
+    //  z-index: $modal-background-z-index !important;
+    &:focus {
+      outline: none;
+    }
+  }
+
+
+  // 4) el-dialog 모달창
+  .el-dialog__wrapper { // 팝업 뒤 background
+    background-color: rgba(0, 0, 0, .7);
+    overflow: hidden !important;
+    // z-index: 2001 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // z-index: $modal-background-z-index !important;
+    .el-dialog {
+      padding: $gap-m;
+      width: 540px;
+      // width: 80%;
+      border-radius: 3px;
+      // z-index: 2020 !important;
+      background-color: $background-color;
+      margin-top: 0 !important;
+      margin-bottom: 0;
+    }
+    .el-dialog__header {
+      margin-bottom: $gap-m;
+      padding: 0;
+    }
+    .el-dialog__title {
+      display: block;
+      color: $white;
+      font-size: 18px;
+      font-weight: normal;
+      // display: none;
+      line-height: 18px;
+    }
+    .el-dialog__headerbtn {
+      top: 15px; right: 17px;
+    }
+    .el-icon-close {
+      width: 17px; height: 15px;
+      &:before {
+        font-size: 20px;
+        font-weight: bold;
+        color: $white;
+      }
+    }
+
+    .el-dialog__body {
+      padding: 0;
+      // text-align: center;
+      color: $white;
+      .modal-button-area {
+        margin-top: $gap;
+        text-align: center;
+        > button {
+          margin: 0 5px;
+          height: 38px;
+          line-height: 36px;
+        }
+      }
+    }
+  }
+
+  .none-header { // header 없는 모달..
+    .el-dialog__header {
+      margin: 0 !important;
+    }
+    .el-dialog__title {
+      display: none !important;
+    }
+  }
+
+
+  // 5) input (input 박스)
+  .el-input {
+    > .el-input__inner {
+      height: 32px;
+      line-height: 16px;
+      border: 1px solid $input-stroke;
+      border-radius: $radius-s;
+      background-color: transparent;
+      color: inherit;
+      &::placeholder {
+        color: $input-placeholder;
+        line-height: $gap;
+      }
+      &:focus {
+        color: $color-black;
+        background-color: $white;
+        border-color: $input-stroke-active;
+         &::placeholder {
+          color: $input-placeholder;
+        }
+      }
+    }
+    > .el-input__suffix {
+      .el-input__suffix-inner {
+        .el-input__icon { // 클리어 버튼
+          line-height: 32px;
+          color: $main-red;
+        }
+      }
+    }
+    &.is-disabled {
+       > .el-input__inner {
+        // opacity: .5;
+        color: $input-placeholder;
+        border-color: $purple-gray;
+        background-color: rgba($color: $dark-slate, $alpha: .6);
+        &:hover {border-color: $purple-gray;}
+        &::placeholder { color: $input-placeholder; }
+      }
+      // comment 0910
+      // 너무 잦은 important는 나중에 크----은 화를 불라올 수도 있습니다!!
+      // 근데.. 이렇게 된것도 나름의 이유가 있겠죠? ㅠㅠ
+      //
+      // CSS 적용 우선순위는 '구체적으로 선택한 친구' 가 우선 적용됩니다.
+      // https://devdocs.io/css/specificity
+      //
+      // <div class="sungnam-si">
+      //   <div class="bundang-gu">
+      //     <div class="sunae-dong">
+      //       <div class="dongbu-root-tower">
+      //         <div class="growth">그로스</div>
+      //       </div>
+      //     </div>
+      //   </div>
+      // </div>
+      // 이런 친구를 가지고 테스트 해보면 나름 재미있어요.
+    }
+    .el-input__count {
+      .el-input__count-inner {
+        background-color: transparent !important;
+        color: $color-middlegrey;
+      }
+    }
+  }
+
+
+  // 6) textarea
+  .el-textarea {
+    > .el-textarea__inner {
+      min-height: 30px !important;
+      line-height: 25px !important;
+      border: 1px solid $input-stroke;
+      border-radius: $radius-s;
+      background-color: transparent;
+      color: inherit;
+      &::placeholder {
+        color: $input-placeholder;
+        // line-height: $gap;
+      }
+      &:focus {
+        color: $color-black;
+        background-color: $white;
+        border-color: $input-stroke-active;
+      }
+    }
+    &.is-disabled {
+      > .el-textarea__inner {
+        // opacity: .5;
+        color: $input-placeholder;
+        border-color: $purple-gray;
+        background-color: rgba($color: $dark-slate, $alpha: .6);
+        &:hover {border-color: $purple-gray;}
+        &::placeholder { color: $input-placeholder; }
+      }
+    }
+    .el-input__count { background: transparent; }
+  }
+
+
+  // 7) select (select 박스)
+  .el-select {
+    // min-width: 100px;
+    width: 100%;
+    > .el-input {
+      &.el-input--suffix {
+        > .el-input__inner {
+          &:focus {
+            border: 1px solid $input-stroke;
+            background-color: transparent;
+            color: inherit;
+          }
+        }
+        // .el-input__suffix { margin: 0; right: 15px; }
+        .el-select__caret.el-input__icon {
+          color: inherit;
+          font-size: 10px;
+          font-weight: bold;
+          height: 32px;
+          line-height: 32px;
+          &.is-reverse {
+            color: $color-black;
+          }
+        }
+      }
+      &.is-focus {
+        > .el-input__inner {
+          color: $color-grey;
+          background-color: $white;
+          border-color: $input-stroke-active;
+          &:focus {
+            color: $color-grey;
+            background-color: $white;
+            border-color: $input-stroke-active;
+          }
+        }
+      }
+      &.is-disabled {
+          > .el-input__inner {
+            // opacity: .5;
+            color: $input-placeholder;
+            border-color: $purple-gray;
+            background-color: rgba($color: $dark-slate, $alpha: .6);
+            &:hover {border-color: $purple-gray;}
+            &::placeholder { color: $input-placeholder; }
+          }
+      }
+    }
+
+    .el-tag {
+      padding: 0 8px;
+      height: 24px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 22px;
+    }
+    .el-tag__close {
+      background-color: transparent;
+      &::before {
+        font-size: 11px;
+        line-height: 14px;
+      }
+    }
+  }
+
+  // 7-1) select 박스 드롭다운 영역
+  .el-select-dropdown {
+    border: none;
+    background-color: $white;
+    // width: 100%;
+    min-width: 200px;
+    box-shadow: none;
+    border: 1px solid $input-stroke-active;
+    &.el-popper {
+      border-radius: $radius-s;
+      position: absolute;
+      .popper__arrow {
+        display: none;
+      }
+
+    }
+    .el-select-dropdown__wrap {
+      border-top: 1px solid $input-stroke-active;
+      .el-select-dropdown__list {
+        border-radius: $radius-s;
+        background-color: $white;
+        .el-select-dropdown__item {
+          color: $color-grey;
+          height: 30px;
+          line-height: 30px;
+          padding: 0 15px;
+          width: 100%;
+          &.hover {
+            color: $color-black;
+            font-weight: 500;
+            background-color: $white;
+          }
+          &.selected {
+            color: $primary;
+            font-weight: 600;
+          }
+          &.is-disabled {
+            color: rgba($color: $input-placeholder, $alpha: .2);
+            background-color: rgba($color: $disable, $alpha: .08);
+          }
+        }
+      }
+    }
+
+    .el-select-dropdown__empty {
+      text-align: left;
+      padding-left: 15px;
+      border-top: 1px solid $input-stroke-active;
+    }
+  }
+
+
+  // 8) 드롭다운 dropdown :: el-dropdown
+  .el-dropdown {
+    > .el-dropdown-selfdefine {
+      &:focus { outline: none; }
+    }
+  }
+
+  .el-dropdown-menu {
+    background-color: $white !important;
+    border: 0 !important;
+    border-radius: $radius-s;
+    > .el-dropdown-menu__item {
+      padding: 0 15px;
+      color: $gray !important;
+      border: 0;
+      &:not(.is-disabled):hover {
+        font-weight: bold;
+        color: $color-black;
+        background-color: transparent;
+      }
+    }
+    .popper__arrow {
+      border-bottom-color: $white !important;
+      border-top-color: $white !important;
+      &::after {
+        border-top-color: $white !important;
+        border-bottom-color: $white !important;
+        color: $white !important;
+      }
+    }
+  }
+
+
+  // 9) checkbox
+  // checkbox 그룹
+  .el-checkbox-group {
+    .el-checkbox{
+      margin-right: 16px;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  // 개별 checkbox
+  .el-checkbox{
+    margin-right: 0;
+    > .el-checkbox__input {
+      > .el-checkbox__inner {
+        width: 20px; height: 20px;
+        background-color: transparent;
+        border-radius: $radius-s;
+        border: 1px solid $input-stroke;
+      }
+      & + .el-checkbox__label { color: inherit; }
+      &.is-checked {
+        .el-checkbox__inner {
+          border: 1px solid #f0f0f0;
+          background-color: #f0f0f0;
+          &::after {
+            top: 3px;
+            left: 6px;
+            height: 8px;
+            width: 4px;
+            font-size: 90px;
+            border-width: 2px;
+            border-color: $main-gray;
+          }
+        }
+
+        &.is-indeterminate {
+          .el-checkbox__inner {
+            &::before {
+              background-color: $main-gray;
+            }
+          }
+        }
+        & + .el-checkbox__label { color: $color-lightgrey; }
+      }
+      &.is-indeterminate {
+        .el-checkbox__inner {
+          background-color: $white;
+          &:before {
+            background-color: $main-gray;
+            top: 8px;
+          }
+        }
+      }
+      &.is-focus {
+        .el-checkbox__inner {
+          border-color: $input-stroke-active;
+        }
+      }
+    }
+    > .el-checkbox__label {
+      height: 12px;
+      line-height: 14px;
+      padding-left: 5px;
+      font-weight: normal;
+      font-size: 12px;
+      color: $color-lightgrey;
+    }
+
+    &.is-disabled {
+      > .el-checkbox__input {
+        > .el-checkbox__inner {
+          background-color: $disable;
+          opacity: .5;
+        }
+        &.is-checked {
+          .el-checkbox__inner {
+            background-color: lighten($disable, 50%);
+          }
+        }
+      }
+    }
+  }
+  // 10) slider (input range)
+  .el-slider {
+    height: 32px;
+    .el-slider__button {
+      @include progressThumbStyle();
+    }
+    .el-slider__runway {
+      height: 4px;
+      background: #252535;
+      margin: 14px 0;
+      .el-slider__bar {
+        @include progressStyle()
+        // @include gradientBackground;
+      }
+    }
+  }
+
+    // 11) radio (square)
+    .el-radio-group {
+      display: flex;
+      align-items: center;
+      > .el-radio-button {
+        .el-radio-button__inner {
+          padding: 0 15px;
+          height: 32px;
+          color: $input-placeholder;
+          font-size: 13px;
+          font-weight: normal;
+          border-color: #3d435e;
+          border-left: 0;
+          line-height: 32px;
+          background-color: transparent;
+          &:hover {
+            color: lighten($input-placeholder, 5%);
+          }
+        }
+        &:focus:not(.is-focus):not(:active):not(.is-disabled) {
+          box-shadow: none;
+        }
+        &.is-disabled {
+          color: $input-placeholder;
+          border-color: #39394b;
+          background-color: #39394b;
+        }
+      }
+      .el-radio-button:first-child {
+        .el-radio-button__inner {
+          border-left: 1px solid #39394b;
+          border-radius: 2px 0 0 2px;
+        }
+      }
+      .el-radio-button:last-child {
+        .el-radio-button__inner {
+          border-radius: 0 2px 2px 0;
+        }
+      }
+      .el-radio-button.is-active {
+        .el-radio-button__inner {
+          border-color:  $purple;
+          background-color:  $purple;
+          box-shadow: -1px 0 0  $purple;
+          color: $white;
+          &:hover {
+            color: $white;
+          }
+        }
+      }
+    }
+
+    // 12) radio (normal)
+    .el-radio {
+      display: flex;
+      align-items: center;
+      margin-right: $gap-s;
+      height: 20px;
+
+      .el-radio__label {
+        font-weight: normal;
+        font-size: 12px;
+        // height: 20px;
+        line-height: 20px;
+        color: inherit;
+        padding-left: 6px;
+      }
+    }
+
+
+    .el-radio__input {
+      height: 20px;
+      .el-radio__inner {
+        border-color: $gray;
+        background: transparent;
+        width: 20px; height: 20px;
+      }
+
+
+      &.is-checked {
+        .el-radio__inner {
+          background:  #f0f0f0;
+          border-color: #f0f0f0;
+          &:after {
+            width: 10px;
+            height: 10px;
+            background-color: #22272b;
+          }
+        }
+        & + .el-radio__label {
+          color: $color-lightgrey;
+        }
+      }
+
+      &.is-disabled {
+        opacity: .5;
+        .el-radio__inner {
+          width: 20px;
+          height: 20px;
+          background: $filter-stroke;
+          border-color: $color-middlegrey;
+          // opacity: .5;
+        }
+        & + .el-radio__label {
+          color: $color-middlegrey;
+        }
+      }
+    }
+
+
+  // 13) upload (파일 업로드)
+  .cmp-upload {
+    overflow: hidden;
+    > * { float: left; }
+    .el-upload {
+      margin-right: $gap-s;
+      // > button {
+      //   padding: 0 $gap-s;
+      // }
+    }
+    .el-upload-list {
+      min-width: 120px;
+      max-width: 300px;
+      .el-upload-list__item {
+        margin: 0;
+        border-radius: 0;
+        border-bottom: 1px solid $main-red;
+        line-height: 30px;
+        position: relative;
+        .el-icon-close {
+          line-height: 23px;
+          right: 0;
+          &::before {
+            font-size: 13px;
+            display: block;
+            width: 13px;
+          }
+        }
+        .el-upload-list__item-name {
+          margin-right: 15px;
+          padding-left: 18px;
+          padding-right: 5px;
+          font-weight: normal;
+          .el-icon-document {
+            position: absolute;
+            top: 0; left: 0;
+            height: 32px;
+            width: 15px;
+            display: flex;
+            align-items: center;
+            &::before {
+              content: '';
+              display: block;
+              width: 13px; height: 13px;
+              background: url('../assets/images/upload-link.png') no-repeat;
+              background-size: contain;
+            }
+          }
+          &:hover { color: $white; }
+        }
+
+        &.is-success:focus:not(:hover) {
+          .el-icon-close-tip { display: none !important; }
+        }
+        .el-upload-list__item-status-label {display: none}
+        .el-progress-bar {
+          .el-progress-bar__inner { background: $main-red; }
+        }
+        .el-progress__text {
+          font-size: 10px !important;
+          top: -9px
+        }
+        .el-icon-close-tip { display: none !important; }
+      }
+    }
+
+    &.-absolute {
+      position: relative;
+      .el-upload { margin-right: 15px; }
+      .el-upload-list {
+        position: absolute;
+        left: 125px;
+      }
+    }
+
+    &.-limit-width {
+      .el-upload-list {
+        width: 90px;
+      }
+    }
+  }
+
+  .el-upload {
+    &:focus {
+      color: $white !important;
+      border-color: $gray !important;
+    }
+  }
+  .el-upload-list {
+    .el-upload-list__item {
+      &:hover {
+        background-color: transparent;
+      }
+      &:focus {
+        outline: none;
+      }
+      > .el-upload-list__item-name {
+        color: $input-placeholder;
+      }
+      .el-icon-close-tip {
+        display: none;
+      }
+    }
+  }
+
+
+  // 14) el-switch (스위치)
+  .el-switch {
+    width: 50px;
+    height: 20px;
+    .el-switch__core {
+      min-width: 50px;
+      border-color: $input-placeholder;
+      background-color: transparent;
+      &::after {
+        top: 2px;
+        left: 3px;
+        width: 14px;
+        height: 14px;
+        background-color: $input-placeholder;
+      }
+      &::before {
+        content: 'OFF';
+        position: absolute;
+        top: -1px;
+        right: 5px;
+        font-size: 12px;
+        color: $input-placeholder;
+      }
+    }
+    &.is-checked {
+      .el-switch__core {
+        position: relative;
+        border-color: $main-blue;
+        background-color: transparent;
+        &::after {
+          left: 100%;
+          background-color: $main-blue;
+        }
+        &::before {
+          content: 'ON';
+          position: absolute;
+          top: -1px;
+          left: 5px;
+          font-size: 12px;
+          color: $main-blue;
+        }
+
+      }
+    }
+  }
+
+
+  // 15) el-pagination (페이징)
+  .pagination-wrap {
+    margin-top: $gap-m;
+    > .el-pagination {
+      text-align: center;
+      > button {
+        padding: 0;
+        min-width: 24px;
+        height: 24px;
+      }
+      > .btn-prev, .btn-next {
+        color: $white;
+        background-color: $main-gray;
+        border-radius: $radius-s;
+        margin: 0 $gap-s;
+      }
+      > .btn-prev[disabled=disabled], .btn-next[disabled=disabled] { opacity: .5; }
+
+      > .el-pager {
+        > li {
+          padding: 0;
+          min-width: 30px;
+          margin-right: 2px;
+          background-color: transparent;
+          color: #999;
+          font-weight: normal;
+          line-height: 24px;
+          &.active {
+            position: relative;
+            padding: 0;
+            color: $color-ticket-cont;
+            &:after {
+              content: '';
+              position: absolute;
+              bottom: 5px;
+              left: 10px;
+              width: 9px;
+              height: 1px;
+              background-color: $white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  // 16) el-popper (el-ui 미니 팝업창 위치 조절) 😡 - 만지면 모든 미니팝업 위치가 달라집니다(위험)
+  .el-popper {
+    white-space: nowrap;
+
+    &.dropdown-popper {
+      border: none !important;
+    }
+    &.el-autocomplete-suggestion {
+      border-radius: 0;
+      > .popper__arrow { display: none; }
+      .el-autocomplete-suggestion__list {
+        > li {
+          padding: 0 12px;
+          font-size: 13px;
+          color: $color-grey;
+          font-weight: normal;
+          &:hover, &.highlighted {
+            color: $color-black;
+            font-weight: 500;
+            background-color: transparent;
+          }
+        }
+      }
+    }
+  }
+  .el-popper[x-placement^=bottom] {
+    position: relative;
+    transform-origin: center top !important;
+  }
+  .el-popper[x-placement^=top] {
+    transform-origin: center bottom !important;
+  }
+
+  .el-popper[x-placement^=bottom]:not(.resource),
+  .el-popper[x-placement^=top]:not(.resource) {
+    margin-top: -1px !important;
+    border-top: 0 !important;
+    // z-index: $dropdown-z-index !important;
+    //  &::before {
+    //   content: '';
+    //   position: absolute;
+    //   top: 0px;
+    //   left: $gap;
+    //   right: $gap;
+    //   height: 1px;
+    //   background-color: $input-stroke;;
+    // }
+  }
+
+  .el-popper {
+    &[x-placement^=bottom] {
+      &.resource .popper__arrow {
+        border-bottom-color: $color-black;
+      }
+    }
+    &[x-placement^=top] {
+      &.resource .popper__arrow {
+        border-top-color: $color-black;
+      }
+    }
+  }
+
+
+  // 17) el-input--small (small 사이즈)
+  div.el-input--small {
+    height: 35px;
+    width: 100px;
+    .el-input__inner {
+      display: block;
+      height: 100%;
+    }
+  }
+
+
+  // 18) el-tag (태그)
+  .el-tag {
+    padding: 0 15px;
+    margin: 2px 10px 2px 0px;
+    height: 29px;
+    background-color: $main-gray;
+    font-size: 14px;
+    line-height: 29px !important;
+    color: $white;
+    border: none;
+    border-radius: 14px;
+    .el-tag__close.el-icon-close {
+      color: $main-red;
+      &::before {
+        font-size: 11px;
+      }
+      &:hover {background-color: transparent;}
+    }
+    &.el-tag--small {
+      padding: 0 $gap-s;
+      margin: 2px 5px 2px 0px;
+      border-radius: 11px;
+      height: 22px;
+      font-size: 12px;
+      line-height: 22px !important;
+    }
+  }
+
+
+  // 19) el-input-number (input 넘버)
+  .el-input-number {
+    min-width: 120px;
+    height: 32px;
+    border: none;
+    line-height: 32px;
+
+    &.billing {
+      &.scope {
+        width: 100px;
+        & .el-input > input {
+          padding: 0;
+        }
+      }
+      &.price {
+        width: 150px;
+      }
+    }
+
+    &.is-controls-right {
+      .el-input__inner {
+        padding-right: $gap;
+        width: 100%;
+      }
+    }
+    &.is-disabled {
+      .el-input-number__increase,
+      .el-input-number__decrease {
+         border-color: $disable;
+      }
+    }
+    .el-input-number__increase {
+      color: $color-lightgrey;
+      top: 1px;
+      // right: -1px;
+      width: 32px;
+      height: 31px;
+      background: rgba(42, 45, 68, 0.7);
+      border-color: $input-stroke;
+      border-radius: $radius-s;
+      &:not(.is-disabled) { color: $white; }
+      &:hover {
+        & ~ .el-input .el-input__inner { border-color: $input-stroke-active !important; }
+      }
+    }
+    .el-input-number__decrease {
+      color: $color-lightgrey;
+      top: 1px;
+      // left: -1px;
+      width: 32px;
+      height: 31px;
+      background: rgba(42, 45, 68, 0.7);
+      border-color: $input-stroke;
+      border-radius: $radius-s;
+      &.is-disabled{
+        color:$text-dark-gray;
+      }
+      &:not(.is-disabled) { color: $white; }
+      &:hover {
+        & ~ .el-input .el-input__inner { border-color: $input-stroke-active !important; }
+      }
+    }
+    .el-icon-minus { vertical-align: middle; }
+    .el-icon-plus { vertical-align: middle; }
+  }
+
+
+  // 20) el-tooltip (툴팁)
+  .el-tooltip__popper {
+      &.is-drak {
+      //  transform: translateX(20px);
+        // height: 30px;
+        padding: $gap-s;
+        // background-color: $main-blue;
+        border-radius: $radius;
+        color: $white;
+        box-sizing: border-box;
+        .popper__arrow {
+          // border-top-color: $main-blue !important;
+          &:after {
+            // border-top-color: $main-blue !important;
+          }
+        }
+      }
+      &.is-light {
+      padding: $gap-s;
+      // background-color: $primary;
+      border-radius: $radius;
+      color: $color-black;
+      box-sizing: border-box;
+      .popper__arrow {
+        // border-top-color: $primary !important;
+        // border-right-color: $primary !important;
+        &:after {
+          // border-top-color: $primary !important;
+          // border-right-color: $primary !important;
+          &:after {
+            // border-top-color: $primary !important;
+            // border-right-color: $primary !important;
+          }
+        }
+      }
+    }
+  }
+
+
+  // 21) el-loading (로딩)
+  .el-loading-mask {
+    background-color: hsla(0,0%,0%,.2);
+    .el-loading-text {
+      color: $purple-blue;
+      white-space: pre;
+      line-height: 1.5;
+      font-size: 12px;
+      font-weight: normal;
+    }
+    .el-loading-spinner {
+      .path { stroke: $purple-blue; }
+    // 추후에 모든 부분에 적용이 필요하다면 써도 될 것 같습니다!!
+    //   &::after {
+    //     content: '데이터 로딩중\a잠시만 기다려 주십시오.';
+    //     white-space: pre;
+    //     line-height: 1.7;
+    //     display: block;
+    //     color: #409EFF;
+      }
+  }
+
+
+  // 22) el-popover (팝오버)
+  .el-popover {
+    padding: $gap-s;
+    color: $color-black;
+    font-size: 13px;
+    line-height: 23px;
+    border-radius: $radius-r;
+    min-width: auto;
+    width: auto !important;
+    border: 1px solid $slate;
+    box-shadow: none;
+     > .popper__arrow {
+        border-top-color: $slate;
+        &::after {
+          border-top-color: $slate;
+        }
+      }
+    &.dark {
+      color: $color-lightgrey;
+      background-color: $main-black;
+      > .popper__arrow {
+        border-bottom-color: $main-black;
+        &::after {
+          border-bottom-color: $main-black;
+        }
+      }
+    }
+    &.-scroll { // 팝오버에 스크롤이 있는 경우
+      .more-info-list {
+        overflow-y: auto;
+        max-height: 400px;
+        &::-webkit-scrollbar {
+          width: 16px;
+          background: transparent;
+        }
+        &::-webkit-scrollbar-track { background: transparent; }
+        &::-webkit-scrollbar-thumb {
+            background: #999;
+            border: 7px solid transparent;
+            border-radius: 50px;
+            background-clip: padding-box;
+        }
+      }
+    }
+
+    &.el-popper[x-placement^=bottom].is-list {
+      margin-top: 5px !important;
+      > .popper__arrow {
+        display: none;
+      }
+    }
+  }
+
+
+  // 23) el-step (스텝)
+  .el-steps {
+    margin: auto;
+    width: 300px;
+    .el-step__head {
+      .el-step__icon { cursor: pointer;}
+      &.is-process {
+        .el-step__icon {
+          color: $main-blue;
+          border-color: $main-blue;
+          background-color: $white;
+        }
+      }
+      &.is-wait {
+        background-color: transparent;
+        .el-step__icon {
+          color: $color-grey;
+          border-color: $color-grey;
+          background-color: transparent;
+        }
+      }
+      &.is-finish {
+        .el-step__icon {
+          color: $white;
+          border-color: $main-blue;
+          background-color: $main-blue;
+        }
+        > .el-step__line {background-color: $main-blue;}
+      }
+    }
+    .el-step__title {
+      font-weight: 500;
+      font-size: 14px;
+      text-indent: -15px;
+      color: $white;
+      &.is-process {
+        color: $white;
+      }
+      &.is-wait {
+        background-color: transparent;
+        color: $color-grey;
+      }
+      &.is-finish {
+        color: $main-blue;
+      }
+    }
+  }
+
+  // 24) el-tab (탭)
+  .el-tabs {
+    > .el-tabs__header {
+      // margin: 0 0 $gap-m 0;
+      margin: 0 0 $gap 0;
+      .el-tabs__nav-wrap {
+        &::after {
+          height: 1px;
+          background-color: #fff;
+          opacity: .1;
+        }
+        .el-tabs__nav {
+          > .el-tabs__active-bar {
+            height: 3px;
+            background-color: $main-blue;
+          }
+          > .el-tabs__item {
+            padding: 12px 0;
+            min-width: 150px;
+            color: $slate;
+            font-size: 16px;
+            font-weight: normal;
+            text-align: center;
+            line-height: 16px;
+            &.is-active {
+              color: $white;
+              font-weight: bold;
+            }
+            &.is-focus {
+              outline: none;
+            }
+            .el-icon-close {
+              margin-left: $gap-s;
+              &::before {
+                font-size: 11px;
+                line-height: 14px;
+                color: $main-red;
+              }
+              &:hover {background-color: transparent;}
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 25) el-badge (배지)
+  .el-badge__content {
+    background-color: $main-red;
+    border: none;
+    box-shadow: 0 0 0 1.5px  $background-color inset;
+    height: 16px;
+    font-size: 9px;
+    line-height: 16px;
+    &.is-fixed {
+      top: 5px;
+      right: 15px;
+    }
+
+
+  }
+
+  // 26) el-input(패스워드 눈모양)
+  .el-input {
+    > .el-input__inner {
+      &[type=text] {
+        & + .el-input__suffix {
+          .el-input__suffix-inner {
+            .el-icon-view {
+              position: relative !important;
+
+              &::before {
+                position: absolute;
+                display: inline-block !important;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              }
+              &::after {
+                content: '';
+                position: absolute;
+                top: 26%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: 16px;
+                width: 1px;
+                transform: rotate(-45deg);
+                background: $main-red;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+// }
+

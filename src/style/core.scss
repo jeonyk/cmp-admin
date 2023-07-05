@@ -1,0 +1,33 @@
+// core 프로젝트 import
+$select-background: $dark-gray;
+$select-button-background: $dark-gray;
+
+$ip-popup-left: calc(50% - 540px);
+$popup-background: $dark-gray;
+$select-button-background: transparent;
+
+$gauge-path-fill: #363a3f;
+
+$editor-text-color: $white;
+$editor-background-color: $input-stroke;
+$editor-active-background-color: $input-placeholder;
+$editor-min-height: 50vh;
+$editor-edit-hr-background: $color-ticket-cont;
+$editor-edit-blockquote-background: $light-blue;
+$editor-edit-code-background: $color-ticket-cont;
+
+$editor-hr-background: $main-gray;
+$editor-blockquote-background: $dark-slate;
+$editor-code-background: $radius-r;
+$editor-code-radius: $main-gray;
+
+$comp-border: 1px solid $input-stroke;
+$comp-background-color: $background-color;
+$comp-height: 265px;
+
+$panel-background-color: $dark-gray;
+
+$tree-relation-color: $white;
+$tree-child-color: $color-lightgrey;
+$tree-line-color: #9D9D9D;
+$tree-checkbox-border: $gray;

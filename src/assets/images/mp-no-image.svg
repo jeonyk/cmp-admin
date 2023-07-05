@@ -1,0 +1,28 @@
+<svg id="그룹_1" data-name="그룹 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="99.85" viewBox="0 0 100 99.85">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        opacity: 0.05;
+      }
+
+      .cls-1, .cls-3 {
+        fill-rule: evenodd;
+      }
+
+      .cls-2 {
+        fill: none;
+        stroke: #9596a0;
+        stroke-width: 2px;
+      }
+
+      .cls-3 {
+        fill: #9596a0;
+      }
+    </style>
+  </defs>
+  <path id="size" class="cls-1" d="M607,2449.09h95.994a2,2,0,0,1,2,2v95.85a2,2,0,0,1-2,2H607a2,2,0,0,1-2-2v-95.85A2,2,0,0,1,607,2449.09Z" transform="translate(-605 -2449.09)"/>
+  <image id="Vector_Smart_Object" data-name="Vector Smart Object" x="25" y="27.91" width="50" height="44" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAsCAYAAAAn4+taAAAChElEQVRoge2ZPWtUQRSGnyyRpBNtBEkngqDptLBQ7GLwFyhisZIfYGVn42/QQiVYiNYWsrtdGsHCykTSJGgRFMHCMiImMvCODOPm3vm6s5vgC8PsnY8z55k7H+eyM48eP/8ALHK4td47AhBGi7POw4kJOpKq48Bn09cF+XGoEDz1psqbDP0HmTbNFvBnHlgCzuv5IzACdmuy5oJcB54CC175DrACDDPtBysHxEC80fI0jg9UviwwU3ejFkwqyLzehIF4CfSBn6qbA1aBW2pztsYyS93sS5r1HQ8C/e6rbkFtO1cqiN3YAw/ChRl4bTtVKshMDedilAqyoXxZe8LXnOrQcTy1ICNnD6x6MHaz2z00KuRro1JBdnVP7Ol02gKeKG2pbE9t2k6s08AD5cnKuUeGuifshbji1IVeiKbfGnAGuANcU99o5d7sQ90T5oi9oLKNwBDFhUD5WipMiVjLOPxaKVQuxDZwG3iRAzOJ6NeHME6/U77twPjxW6Nqg4yDsDNv8mSYmiBNEFbJMLVAQiCskmBiQYzBTaXQ1x4DYRUNEwNiHTqnFDJTKRBJMKEgvkMhxnMgomFCQMY51Ga8BEQUTBvIQQ41GS8JEQzTBNLm0DjjlzqAaBrvb6B5UIgSOqvWuG37FjjWAYQ73hXgnsYwnwyngO/jQGKXhoV5L6O/gJsdQFh9Be5rNe3rc+GfpZW6vk2by8A3vZFXsbFSpAzAbwvhg+Ru0k/AxZzAL0cuSIlNmhX4lQIpddJMBMYFKXnSVIdxQUofl43nfmn1vIFLy4fpdwVS4pu9TQbmKnAXeNbVIDVAjL4AD7sc4Ej+9bY/QT982fAjqsN6FdfidDKqOfAHF27Zq5RchtcAAAAASUVORK5CYII="/>
+  <circle class="cls-2" cx="74" cy="70.955" r="9"/>
+  <path class="cls-3" d="M684.3,2514.34l1.415,1.41-12.02,12.01-1.415-1.41Z" transform="translate(-605 -2449.09)"/>
+</svg>
